@@ -17,12 +17,12 @@ var goBot *discordgo.Session
 var vcCon *discordgo.VoiceConnection
 
 func userGoodbye(s *discordgo.Session, u *discordgo.GuildMemberRemove){
-   _, _ = s.ChannelMessageSend(WelcomeChannel,  u.User.Username + " was banned by the tyranical Crassus, Fs in chat pls <:OBKick:643516408994594817> :cry:")
+   _, _ = s.ChannelMessageSend(WelcomeChannel,  fmt.Sprintf("%s was banned by the tyranical Crassus, Fs in chat pls <:OBKick:643516408994594817> :cry:", u.User.Username))
    return
 }
 
 func userWelcome(s *discordgo.Session, u *discordgo.GuildMemberAdd){
-   _, _ = s.ChannelMessageSend(WelcomeChannel, "Hey " + u.User.Mention() + ", welcome to **Quantex Esports Network** :tada: :hugging: <:OBKiss:643520085197062164> !")
+   _, _ = s.ChannelMessageSend(WelcomeChannel, fmt.Sprintf("Hey %s, welcome to **Quantex Esports Network** :tada: :hugging: <:OBKiss:643520085197062164> !", u.User.Mention()))
    return
 }
 
@@ -30,7 +30,7 @@ func logHandler(s *discordgo.Session, m *discordgo.MessageCreate){
    if m.Author.ID == BotID {
       return
    }
-   _, _ = s.ChannelMessageSend(LogsChannel, "\"" + m.Content + "\" - " + m.Author.String() + " in " + ChannelNameByID[m.ChannelID])
+   _, _ = s.ChannelMessageSend(LogsChannel, fmt.Sprintf("\"%s\" - %s in %s", m.Content, m.Author.String(), ChannelNameByID[m.ChannelID]))
 }
 
 func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate){
@@ -49,7 +49,7 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate){
             _, _ = s.ChannelMessageSend(BotTestChannel, userList)
          case "!countUsers":
             memberListArray, _ := s.GuildMembers(QuantexID,"0", 1000)
-            _, _ = s.ChannelMessageSend(BotTestChannel, "Number of users: " + strconv.Itoa(len(memberListArray)))
+            _, _ = s.ChannelMessageSend(BotTestChannel, fmt.Sprintf("Number of users: %d", strconv.Itoa(len(memberListArray)) ))
          }
       }
    } else if m.ChannelID == BotCommandsChannel || m.ChannelID == BotTestChannel {
@@ -95,7 +95,7 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate){
       }
       rand.Seed(time.Now().UnixNano())
       side := coin[rand.Intn(len(coin))]
-      _, _ = s.ChannelMessageSend(m.ChannelID, "The coin landed on " + side +"!")
+      _, _ = s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("The coin landed on %s!", side))
    }
 
 func Start() {

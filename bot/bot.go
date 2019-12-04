@@ -30,6 +30,7 @@ func logHandler(s *discordgo.Session, m *discordgo.MessageCreate){
    if m.Author.ID == BotID {
       return
    }
+   if strings.Contains(m.Content, "@") {m.Content = strings.Replace(m.Content, "@", "[at]", 10)}
    _, _ = s.ChannelMessageSend(LogsChannel, fmt.Sprintf("\"%s\" - %s in %s", m.Content, m.Author.String(), ChannelNameByID[m.ChannelID]))
 }
 

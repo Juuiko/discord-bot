@@ -38,6 +38,7 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate){
    if m.Author.ID == BotID {
       return
    }
+   addExp(m)
    if m.ChannelID == BotTestChannel {
       if strings.HasPrefix(m.Content, config.BotPrefix) {
          switch m.Content {
@@ -51,6 +52,9 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate){
          case "!countUsers":
             memberListArray, _ := s.GuildMembers(QuantexID,"0", 1000)
             _, _ = s.ChannelMessageSend(BotTestChannel, fmt.Sprintf("Number of users: %d", strconv.Itoa(len(memberListArray)) ))
+         case "!updateList":
+            memberListArray, _ := s.GuildMembers(QuantexID,"0",1000)
+            fillDB(memberListArray)
          }
       }
    } else if m.ChannelID == BotCommandsChannel || m.ChannelID == BotTestChannel {
@@ -60,6 +64,8 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate){
             _, _ = s.ChannelMessageSend(BotCommandsChannel, "Command list: cointoss, ping, inspire, join, exit")
          case "!cointoss":
             command_cointoss(s,m)
+         case "!top":
+            printLeaderboard(s,m)
          case "!ping":
             _, _ = s.ChannelMessageSend(BotCommandsChannel, "pong")
          case "!emoteT":

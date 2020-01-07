@@ -7,10 +7,10 @@ Uses the [DiscordGo](https://github.com/bwmarrin/discordgo) package for bindings
 * Cointoss  
 * Welcome and goodbye messages  
 * Inspirobot API implementation  
-* Message logging  
+* Message logging
+* Track total user messages in database
+* SQLite queries for said database 
   
 #### WIP Features:  
-* Track total user messages in database  
 * Track user voice chat usage in database  
-* SQLite queries for said database  
 * Music services  

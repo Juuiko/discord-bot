@@ -34,6 +34,30 @@ func logHandler(s *discordgo.Session, m *discordgo.MessageCreate){
    _, _ = s.ChannelMessageSend(LogsChannel, fmt.Sprintf("\"%s\" - %s in %s", m.Content, m.Author.String(), ChannelNameByID[m.ChannelID]))
 }
 
+func profileEmbed(s *discordgo.Session, m *discordgo.MessageCreate){
+   mE := new(discordgo.MessageEmbed)
+   mE.Title = fmt.Sprintf("%s's profile",m.Author.Username)
+   pic := new(discordgo.MessageEmbedImage)
+   pic.URL = m.Author.AvatarURL("128")
+   mE.Image = pic
+   mE.Color = 9693630
+   exp := findExp(m)
+   pos := findPos(m,exp)
+   member, err := s.GuildMember(QuantexID,m.Author.ID)
+   if err != nil {
+    fmt.Println(err.Error())
+   }
+   time, err := member.JoinedAt.Parse()
+   if err != nil {
+    fmt.Println(err.Error())
+   }
+   mE.Description = "Server exp = " + strconv.Itoa(exp) + "\n Sever rank = " + strconv.Itoa(pos) + "\nJoin date = " + time.Format("02/01/2006 15:04")
+   _, err = s.ChannelMessageSendEmbed(BotCommandsChannel,mE)
+   if err != nil {
+    fmt.Println(err.Error())
+   }
+}
+
 func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate){
    if m.Author.ID == BotID {
       return
@@ -61,11 +85,13 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate){
       if strings.HasPrefix(m.Content, config.BotPrefix) {
          switch m.Content {
          case "!help":
-            _, _ = s.ChannelMessageSend(BotCommandsChannel, "Command list: cointoss, ping, inspire, join, exit")
+            _, _ = s.ChannelMessageSend(BotCommandsChannel, "Command list: cointoss, ping, inspire, join, exit, top, me")
          case "!cointoss":
             command_cointoss(s,m)
          case "!top":
             printLeaderboard(s,m)
+        case "!me":
+            profileEmbed(s,m)
          case "!ping":
             _, _ = s.ChannelMessageSend(BotCommandsChannel, "pong")
          case "!emoteT":

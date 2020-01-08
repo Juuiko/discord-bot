@@ -8,6 +8,14 @@ import (
    "strconv"
 )
 
+type user struct{
+  id string
+  name string
+  discrim string
+  vexp int
+  exp int
+}
+
 func fillDB(ml []*discordgo.Member){
   db, err := sql.Open("sqlite3", "./database.db")
   if err != nil {
@@ -27,6 +35,7 @@ func fillDB(ml []*discordgo.Member){
 }
 
 func addExp(m *discordgo.MessageCreate){
+  u := new(user)
   db, err := sql.Open("sqlite3", "./database.db")
   if err != nil {
     fmt.Println(err.Error())
@@ -35,38 +44,59 @@ func addExp(m *discordgo.MessageCreate){
   if err != nil {
     fmt.Println(err.Error())
   }
-  var id string
-  var name string
-  var discrim string
-  var vexp int
-  var exp int
   defer rows.Close()
   for rows.Next(){
-    rows.Scan(&id, &name, &discrim, &exp, &vexp)
+    rows.Scan(&u.id, &u.name, &u.discrim, &u.exp, &u.vexp)
     }
   sqlStmt, err := db.Prepare("UPDATE users SET exp = ? WHERE id = ?;")
   if err != nil {
     fmt.Println(err.Error())
   }
-  exp = exp+10
-  sqlStmt.Exec(exp,m.Author.ID)
+  u.exp = u.exp + 10
+  sqlStmt.Exec(u.exp,m.Author.ID)
   db.Close()
 }
 
 func printLeaderboard(s *discordgo.Session, m *discordgo.MessageCreate){
+  u := new(user)
   message := "```\nTop 10 Users:\n"
   db, _ := sql.Open("sqlite3", "./database.db")
   rows, _ := db.Query("SELECT * FROM users ORDER BY exp DESC LIMIT 10;")
-  var id string
-  var name string
-  var discrim string
-  var vexp int
-  var exp int
   defer rows.Close()
   for rows.Next(){
-    rows.Scan(&id, &name, &discrim, &exp, &vexp)
-    message = message + name + ": " + strconv.Itoa(exp) + "\n"
+    rows.Scan(&u.id, &u.name, &u.discrim, &u.exp, &u.vexp)
+    message = message + u.name + ": " + strconv.Itoa(u.exp) + "\n"
   }
   message = message + "\n```"
   _, _ = s.ChannelMessageSend(m.ChannelID, message)
+  db.Close()
+}
+
+func findExp(m *discordgo.MessageCreate) int{
+  u := new(user)
+  db, err := sql.Open("sqlite3", "./database.db")
+  if err != nil {
+    fmt.Println(err.Error())
+  }
+  err = db.QueryRow("SELECT * FROM users WHERE id = ?;", m.Author.ID).Scan(&u.id, &u.name, &u.discrim, &u.exp, &u.vexp)
+  if err != nil {
+    fmt.Println(err.Error())
+  }
+  db.Close()
+  return u.exp
+}
+
+func findPos(m *discordgo.MessageCreate, exp int) int{
+  var ranking int
+  db, err := sql.Open("sqlite3", "./database.db")
+  if err != nil {
+    fmt.Println(err.Error())
+  }
+  err = db.QueryRow("SELECT COUNT (*) FROM users WHERE exp >= ?;", exp).Scan(&ranking)
+  if err != nil {
+    fmt.Println(err.Error())
+    fmt.Println("reeeee")
+  }
+  db.Close()
+  return ranking
 }

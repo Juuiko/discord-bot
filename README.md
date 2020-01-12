@@ -10,7 +10,7 @@ Uses the [DiscordGo](https://github.com/bwmarrin/discordgo) package for bindings
 * Message logging
 * Track total user messages in database
 * SQLite queries for said database 
-  
-#### WIP Features:  
 * Track user voice chat usage in database  
+  
+#### WIP Features:
 * Music services  

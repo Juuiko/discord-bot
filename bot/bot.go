@@ -16,6 +16,8 @@ var BotID string
 var goBot *discordgo.Session
 var vcCon *discordgo.VoiceConnection
 
+var ConnectionMap map[string]int64
+
 func userGoodbye(s *discordgo.Session, u *discordgo.GuildMemberRemove){
    _, _ = s.ChannelMessageSend(WelcomeChannel,  fmt.Sprintf("%s was banned by the tyranical Crassus, Fs in chat pls <:OBKick:643516408994594817> :cry:", u.User.Username))
    return
@@ -34,14 +36,32 @@ func logHandler(s *discordgo.Session, m *discordgo.MessageCreate){
    _, _ = s.ChannelMessageSend(LogsChannel, fmt.Sprintf("\"%s\" - %s in %s", m.Content, m.Author.String(), ChannelNameByID[m.ChannelID]))
 }
 
+func voiceHandler(s *discordgo.Session, u *discordgo.VoiceStateUpdate){
+   _, inMap := ConnectionMap[u.UserID]
+   if u.UserID == BotID {
+      return
+   } else if u.ChannelID == "" || u.Suppress || u.SelfMute || u.SelfDeaf || u.Mute || u.Deaf {
+     if !inMap {
+       return
+     }
+     addTimeToDB(time.Now().Unix()-ConnectionMap[u.UserID], u)
+     delete(ConnectionMap, u.UserID)
+   } else {
+     if !inMap {
+       ConnectionMap[u.UserID] = time.Now().Unix()
+     }
+   }
+}
+
 func profileEmbed(s *discordgo.Session, m *discordgo.MessageCreate){
    mE := new(discordgo.MessageEmbed)
    mE.Title = fmt.Sprintf("%s's profile",m.Author.Username)
+
    pic := new(discordgo.MessageEmbedImage)
    pic.URL = m.Author.AvatarURL("128")
    mE.Image = pic
    mE.Color = 9693630
-   exp := findExp(m)
+   exp, vexp := findExp(m)
    pos := findPos(m,exp)
    member, err := s.GuildMember(QuantexID,m.Author.ID)
    if err != nil {
@@ -51,7 +71,7 @@ func profileEmbed(s *discordgo.Session, m *discordgo.MessageCreate){
    if err != nil {
     fmt.Println(err.Error())
    }
-   mE.Description = "Server exp = " + strconv.Itoa(exp) + "\n Sever rank = " + strconv.Itoa(pos) + "\nJoin date = " + time.Format("02/01/2006 15:04")
+   mE.Description = "Server exp = " + strconv.Itoa(exp) + "\nSever rank = " + strconv.Itoa(pos) + "\nVC time = " + strconv.Itoa(vexp/60) + " mins\nJoin date = " + time.Format("02/01/2006 15:04")
    _, err = s.ChannelMessageSendEmbed(BotCommandsChannel,mE)
    if err != nil {
     fmt.Println(err.Error())
@@ -99,7 +119,7 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate){
          case "!inspire":
             command_inspire(s,m)
          case "!join":
-            vcCon, _ = s.ChannelVoiceJoin(QuantexID,"591762237857726484",false, false)
+            vcCon, _ = s.ChannelVoiceJoin(QuantexID,"591762237857726484",false,false)
          case "!exit":
             vcCon.Disconnect()
          }
@@ -148,6 +168,7 @@ func Start() {
    goBot.AddHandler(userWelcome)
    goBot.AddHandler(logHandler)
    goBot.AddHandler(messageHandler)
+   goBot.AddHandler(voiceHandler)
 
    err = goBot.Open()
    if err!= nil {
@@ -155,6 +176,6 @@ func Start() {
       return
    }
 
+   ConnectionMap = make(map[string]int64)
    fmt.Println("Bot is running!")
-
 }

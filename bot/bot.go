@@ -53,6 +53,25 @@ func voiceHandler(s *discordgo.Session, u *discordgo.VoiceStateUpdate){
    }
 }
 
+func secsToHours(secs int)string{
+  var str1, str2 string
+  mins := secs / 60
+  hours := mins / 60
+  minsLeftover := mins % 60
+  if hours == 1 {
+    str1 = fmt.Sprintf("%dhr ", hours)
+  } else {
+    str1 = fmt.Sprintf("%dhrs ", hours)
+  }
+  if minsLeftover == 1 {
+    str2 = fmt.Sprintf("%dmin", minsLeftover)
+  } else {
+    str2 = fmt.Sprintf("%dmins", minsLeftover)
+  }
+  str := str1 + str2
+  return str
+}
+
 func profileEmbed(s *discordgo.Session, m *discordgo.MessageCreate){
    mE := new(discordgo.MessageEmbed)
    mE.Title = fmt.Sprintf("%s's profile",m.Author.Username)
@@ -71,7 +90,7 @@ func profileEmbed(s *discordgo.Session, m *discordgo.MessageCreate){
    if err != nil {
     fmt.Println(err.Error())
    }
-   mE.Description = "Server exp = " + strconv.Itoa(exp) + "\nSever rank = " + strconv.Itoa(pos) + "\nVC time = " + strconv.Itoa(vexp/60) + " mins\nJoin date = " + time.Format("02/01/2006 15:04")
+   mE.Description = "Server exp = " + strconv.Itoa(exp) + "\nServer rank = " + strconv.Itoa(pos) + "\nVC time = " + secsToHours(vexp) + "\nJoin date = " + time.Format("02/01/2006 15:04")
    _, err = s.ChannelMessageSendEmbed(BotCommandsChannel,mE)
    if err != nil {
     fmt.Println(err.Error())
@@ -151,6 +170,34 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate){
       _, _ = s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("The coin landed on %s!", side))
    }
 
+   func messageReactionAdd(s *discordgo.Session, r *discordgo.MessageReactionAdd){
+     if r.MessageReaction.MessageID == "674756079002976268" {
+       if r.MessageReaction.Emoji.ID == "674659046468354057"{  //EU4
+         s.GuildMemberRoleAdd(QuantexID, r.UserID, "669343691655348236")
+       }
+       if r.MessageReaction.Emoji.ID == "674659075560308766"{ //LoL
+         s.GuildMemberRoleAdd(QuantexID, r.UserID, "669344064780632175")
+       }
+       if r.MessageReaction.Emoji.ID == "674659105578811402"{  //Minecraft
+         s.GuildMemberRoleAdd(QuantexID, r.UserID, "669344100100603916")
+       }
+     }
+   }
+
+   func messageReactionDel(s *discordgo.Session, r *discordgo.MessageReactionRemove){
+     if r.MessageReaction.MessageID == "674756079002976268" {
+       if r.MessageReaction.Emoji.ID == "674659046468354057"{
+         s.GuildMemberRoleRemove(QuantexID, r.UserID, "669343691655348236")
+       }
+       if r.MessageReaction.Emoji.ID == "674659075560308766"{
+         s.GuildMemberRoleRemove(QuantexID, r.UserID, "669344064780632175")
+       }
+       if r.MessageReaction.Emoji.ID == "674659105578811402"{
+         s.GuildMemberRoleRemove(QuantexID, r.UserID, "669344100100603916")
+       }
+     }
+   }
+
 func Start() {
    goBot , err := discordgo.New("Bot " + config.Token)
    if err!= nil {
@@ -169,6 +216,8 @@ func Start() {
    goBot.AddHandler(logHandler)
    goBot.AddHandler(messageHandler)
    goBot.AddHandler(voiceHandler)
+   goBot.AddHandler(messageReactionAdd)
+   goBot.AddHandler(messageReactionDel)
 
    err = goBot.Open()
    if err!= nil {

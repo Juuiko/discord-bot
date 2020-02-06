@@ -94,7 +94,6 @@ func addTimeToDB(time int64, m *discordgo.VoiceStateUpdate){
   if err != nil {
     fmt.Println(err.Error())
   }
-  fmt.Println(u.vexp)
   time = time + int64(u.vexp)
   sqlStmt.Exec(time,m.UserID)
 }

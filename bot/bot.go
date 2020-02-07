@@ -102,7 +102,9 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate){
       return
    }
    addExp(m)
-   if m.ChannelID == BotTestChannel {
+   if strings.HasPrefix(m.Content, "!insecure") {
+     _, _ = s.ChannelMessageSend(m.ChannelID, "https://www.youtube.com/watch?v=4PG_elEG7rA")
+   } else if m.ChannelID == BotTestChannel {
       if strings.HasPrefix(m.Content, config.BotPrefix) {
          switch m.Content {
          case "!listUsers":

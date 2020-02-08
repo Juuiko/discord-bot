@@ -10,7 +10,9 @@ Uses the [DiscordGo](https://github.com/bwmarrin/discordgo) package for bindings
 * Message logging
 * Track total user messages in database
 * SQLite queries for said database 
-* Track user voice chat usage in database  
+* Track user voice chat usage in database
+* Infix calculator
+* Giphy API implementation
   
 #### WIP Features:
 * Music services  

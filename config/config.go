@@ -1,43 +1,47 @@
 package config
+
 import (
-    "fmt"
-    "encoding/json"
-    "io/ioutil"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
 )
 
 var (
-   Token string
-   BotPrefix string
+	Token     string
+	BotPrefix string
+	GiphyKey  string
 
-   config *configStruct
+	config *configStruct
 )
 
 type configStruct struct {
-   Token     string `json:"Token"`
-   BotPrefix string `json:"BotPrefix"`
+	Token     string `json:"Token"`
+	BotPrefix string `json:"BotPrefix"`
+	GiphyKey  string `json:"GiphyAPIKey"`
 }
 
 func ReadConfig() error {
-   fmt.Println("Reading from config file...")
+	fmt.Println("Reading from config file...")
 
-   file, err := ioutil.ReadFile("./config/config.json")
+	file, err := ioutil.ReadFile("./config/config.json")
 
-   if err != nil {
-      fmt.Println(err.Error())
-      return err
-   }
+	if err != nil {
+		fmt.Println(err.Error())
+		return err
+	}
 
-   //fmt.Println(string(file))
+	//	fmt.Println(string(file))
 
-   err = json.Unmarshal(file, &config)
+	err = json.Unmarshal(file, &config)
 
-   if err != nil {
-      fmt.Println(err.Error())
-      return err
-   }
+	if err != nil {
+		fmt.Println(err.Error())
+		return err
+	}
 
-   Token = config.Token
-   BotPrefix = config.BotPrefix
+	Token = config.Token
+	BotPrefix = config.BotPrefix
+	GiphyKey = config.GiphyKey
 
-   return nil
+	return nil
 }

@@ -1,6 +1,7 @@
 package bot
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"math/rand"
@@ -107,6 +108,8 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	addExp(m)
 	if strings.HasPrefix(m.Content, "!insecure") {
 		_, _ = s.ChannelMessageSend(m.ChannelID, "https://www.youtube.com/watch?v=4PG_elEG7rA")
+	} else if strings.HasPrefix(m.Content, "!gif") {
+		commandGiphy(s, m)
 	} else if m.ChannelID == BotTestChannel {
 		if strings.HasPrefix(m.Content, config.BotPrefix) {
 			switch m.Content {
@@ -138,11 +141,13 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 			} else {
 				switch m.Content {
 				case "!help":
-					_, _ = s.ChannelMessageSend(BotCommandsChannel, "Command list: cointoss, ping, inspire, join, exit, top, calc, insecure, me")
+					_, _ = s.ChannelMessageSend(BotCommandsChannel, "Command list: cointoss, ping, inspire, join, exit, top, topVC, calc, insecure, me")
 				case "!cointoss":
-					command_cointoss(s, m)
+					commandCointoss(s, m)
 				case "!top":
 					printLeaderboard(s, m)
+				case "!topVC":
+					printVCLeaderboard(s, m)
 				case "!me":
 					profileEmbed(s, m)
 				case "!ping":
@@ -161,6 +166,33 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 }
 
+func commandGiphy(s *discordgo.Session, m *discordgo.MessageCreate) {
+	input := strings.Trim(m.Content, "!gif ")
+	input = strings.Replace(input, " ", "%", 100)
+	url := "https://api.giphy.com/v1/gifs/search?api_key=" + config.GiphyKey + "&q=" + input + "&limit=1"
+	resp, err := http.Get(url)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	defer resp.Body.Close()
+	html, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	var data map[string]interface{}
+	err = json.Unmarshal([]byte(html), &data)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	if data["meta"].(map[string]interface{})["status"].(float64) == 200 {
+		gif := data["data"].([]interface{})[0].(map[string]interface{})["embed_url"]
+		_, _ = s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("%s", gif))
+	} else {
+		_, _ = s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("API error -> %s", data["meta"].(map[string]interface{})["msg"]))
+	}
+
+}
+
 func commandInspire(s *discordgo.Session, m *discordgo.MessageCreate) {
 	url := "https://inspirobot.me/api?generate=true"
 	resp, err := http.Get(url)
@@ -175,7 +207,7 @@ func commandInspire(s *discordgo.Session, m *discordgo.MessageCreate) {
 	_, _ = s.ChannelMessageSend(m.ChannelID, string(html))
 }
 
-func command_cointoss(s *discordgo.Session, m *discordgo.MessageCreate) {
+func commandCointoss(s *discordgo.Session, m *discordgo.MessageCreate) {
 	coin := []string{
 		"heads",
 		"tails",

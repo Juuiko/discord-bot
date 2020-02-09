@@ -13,6 +13,8 @@ Uses the [DiscordGo](https://github.com/bwmarrin/discordgo) package for bindings
 * Track user voice chat usage in database
 * Infix calculator
 * Giphy API implementation
+* Music services
   
 #### WIP Features:
-* Music services  
+* Track skipping
+* Code stability

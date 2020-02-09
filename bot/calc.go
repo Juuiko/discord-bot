@@ -15,7 +15,7 @@ func hasPrecedence(op1 string, op2 string) bool {
 	return true
 }
 
-func applyOp(op string, b int, a int) (int, error) {
+func applyOp(op string, b int64, a int64) (int64, error) {
 	switch op {
 	case "+":
 		return a + b, nil
@@ -32,8 +32,8 @@ func applyOp(op string, b int, a int) (int, error) {
 	return 0, nil
 }
 
-func calculate(tokens []string) (int, error) {
-	var valueST []int
+func calculate(tokens []string) (int64, error) {
+	var valueST []int64
 	var opST []string
 	for i := 1; i <= len(tokens)-1; i++ {
 		if tokens[i] == "(" {
@@ -67,7 +67,7 @@ func calculate(tokens []string) (int, error) {
 			}
 			opST = append(opST, tokens[i])
 		} else {
-			integer, err := strconv.Atoi(tokens[i])
+			integer, err := strconv.ParseInt(tokens[i], 10, 64)
 			if err != nil {
 				return 0, errors.New("input error")
 			}

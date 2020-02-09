@@ -138,6 +138,8 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 				} else {
 					_, _ = s.ChannelMessageSend(BotCommandsChannel, fmt.Sprintf("Answer -> %d", output))
 				}
+			} else if strings.HasPrefix(m.Content, "!addSong") {
+				addMusic(s, m)
 			} else {
 				switch m.Content {
 				case "!help":
@@ -148,6 +150,8 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 					printLeaderboard(s, m)
 				case "!topVC":
 					printVCLeaderboard(s, m)
+				case "!topEgirls":
+					_, _ = s.ChannelMessageSend(BotCommandsChannel, "```Top Quantex Egirls:\n1. Neasa\n2. bgscurtis\n3. Lizzy```")
 				case "!me":
 					profileEmbed(s, m)
 				case "!ping":
@@ -157,9 +161,13 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 				case "!inspire":
 					commandInspire(s, m)
 				case "!join":
-					vcCon, _ = s.ChannelVoiceJoin(QuantexID, "591762237857726484", false, false)
+					musicCommandJoin(s, m)
+				case "!play":
+					musicCommandPlay(s)
+				case "!queue":
+					musicCommandQueue(s)
 				case "!exit":
-					vcCon.Disconnect()
+					musicCommandLeave()
 				}
 			}
 		}
@@ -185,12 +193,15 @@ func commandGiphy(s *discordgo.Session, m *discordgo.MessageCreate) {
 		fmt.Println(err.Error())
 	}
 	if data["meta"].(map[string]interface{})["status"].(float64) == 200 {
-		gif := data["data"].([]interface{})[0].(map[string]interface{})["embed_url"]
-		_, _ = s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("%s", gif))
+		if len(data["data"].([]interface{})) == 0 {
+			_, _ = s.ChannelMessageSend(m.ChannelID, "No results found :()")
+		} else {
+			gif := data["data"].([]interface{})[0].(map[string]interface{})["embed_url"]
+			_, _ = s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("%s", gif))
+		}
 	} else {
 		_, _ = s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("API error -> %s", data["meta"].(map[string]interface{})["msg"]))
 	}
-
 }
 
 func commandInspire(s *discordgo.Session, m *discordgo.MessageCreate) {

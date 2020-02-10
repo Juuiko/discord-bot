@@ -143,7 +143,7 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 			} else {
 				switch m.Content {
 				case "!help":
-					_, _ = s.ChannelMessageSend(BotCommandsChannel, "Command list: cointoss, ping, inspire, join, exit, top, topVC, calc, insecure, me")
+					_, _ = s.ChannelMessageSend(BotCommandsChannel, "Command list: cointoss, ping, inspire, join, exit, top, topVC, calc, addSong, play, skip, insecure, me")
 				case "!cointoss":
 					commandCointoss(s, m)
 				case "!top":
@@ -151,7 +151,7 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 				case "!topVC":
 					printVCLeaderboard(s, m)
 				case "!topEgirls":
-					_, _ = s.ChannelMessageSend(BotCommandsChannel, "```Top Quantex Egirls:\n1. Neasa\n2. bgscurtis\n3. Lizzy```")
+					_, _ = s.ChannelMessageSend(BotCommandsChannel, "```Top Quantex Egirls:\n1. Neasa\n2. bgscurtis\n3. Raj\n4. Adam\n5. Lizzy```")
 				case "!me":
 					profileEmbed(s, m)
 				case "!ping":
@@ -160,14 +160,12 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 					_, _ = s.ChannelMessageSend(BotCommandsChannel, "<:OBKiss:643520085197062164>")
 				case "!inspire":
 					commandInspire(s, m)
-				case "!join":
-					musicCommandJoin(s, m)
+				case "!skip":
+					musicCommandSkip(s)
 				case "!play":
-					musicCommandPlay(s)
+					musicCommandPlay(s, m)
 				case "!queue":
 					musicCommandQueue(s)
-				case "!exit":
-					musicCommandLeave()
 				}
 			}
 		}

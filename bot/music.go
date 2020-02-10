@@ -10,9 +10,9 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/google/uuid"
 	"github.com/rylio/ytdl"
 	"layeh.com/gopus"
 )
@@ -25,10 +25,11 @@ type queue struct {
 type song struct {
 	title    string
 	url      string
-	duration time.Duration
+	filename string
 }
 
 var q queue
+var stopPlayback chan bool
 
 func getVoiceChannel(s *discordgo.Session, m *discordgo.MessageCreate) string {
 	guildObj, _ := s.Guild(m.GuildID)
@@ -51,14 +52,25 @@ func musicCommandJoin(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 func musicCommandLeave() {
 	vcCon.Disconnect()
-	q.running = false
-	//q.list = q.list[:0]
+	if q.running {
+		var err = os.Remove("./music/" + q.list[0].filename)
+		if err != nil {
+			fmt.Println(err)
+		}
+		q.list = q.list[1:]
+		q.running = false
+	}
+}
+
+func musicCommandSkip(s *discordgo.Session) {
+	_, _ = s.ChannelMessageSend(BotCommandsChannel, "```Skipped "+q.list[0].title+"!```")
+	stopPlayback <- true
 }
 
 func musicCommandQueue(s *discordgo.Session) {
 	queueString := ""
 	if len(q.list) < 1 {
-		queueString = "The queue is empty!"
+		queueString = "The queue is empty"
 		_, _ = s.ChannelMessageSend(BotCommandsChannel, queueString)
 	} else {
 		queueString = "```Music Queue:\n"
@@ -70,21 +82,25 @@ func musicCommandQueue(s *discordgo.Session) {
 	}
 }
 
-func musicCommandPlay(s *discordgo.Session) {
+func musicCommandPlay(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if q.running {
 		_, _ = s.ChannelMessageSend(BotCommandsChannel, "Already running!")
 	} else {
+		musicCommandJoin(s, m)
 		q.running = true
+		stopPlayback = make(chan bool)
 		for len(q.list) > 0 {
 			_, _ = s.ChannelMessageSend(BotCommandsChannel, fmt.Sprintf("```Now playing: %s```", q.list[0].title))
-			play(vcCon, "./music/"+q.list[0].title, make(chan bool))
-			var err = os.Remove("./music/" + q.list[0].title)
+			play(vcCon, "./music/"+q.list[0].filename, stopPlayback)
+			var err = os.Remove("./music/" + q.list[0].filename)
 			if err != nil {
 				fmt.Println(err)
 			}
 			q.list = q.list[1:]
 		}
 		q.running = false
+		musicCommandLeave()
+		_, _ = s.ChannelMessageSend(BotCommandsChannel, "Queue reached end, goodbye :wave:")
 	}
 }
 
@@ -92,17 +108,17 @@ func addMusic(s *discordgo.Session, m *discordgo.MessageCreate) {
 	songURL := strings.Trim(m.Content, "!addSong ")
 	vid, err := ytdl.GetVideoInfo(songURL)
 	if err != nil {
-		fmt.Println("Failed to get video info ->", err)
+		_, _ = s.ChannelMessageSend(BotCommandsChannel, fmt.Sprintf("```Failed to get video info -> %s```", err))
+		return
 	}
 	newSong := song{
 		title:    vid.Title,
 		url:      songURL,
-		duration: vid.Duration,
+		filename: uuid.New().String(),
 	}
 	q.list = append(q.list, newSong)
-	fmt.Println(q)
-	fmt.Println(vid.Title)
-	file, _ := os.Create("./music/" + vid.Title)
+	_, _ = s.ChannelMessageSend(BotCommandsChannel, fmt.Sprintf("```Added %s to queue```", newSong.title))
+	file, _ := os.Create("./music/" + newSong.filename)
 	defer file.Close()
 	vid.Download(vid.Formats[0], file)
 }

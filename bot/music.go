@@ -44,7 +44,7 @@ func getVoiceChannel(s *discordgo.Session, m *discordgo.MessageCreate) string {
 func musicCommandJoin(s *discordgo.Session, m *discordgo.MessageCreate) {
 	channel := getVoiceChannel(s, m)
 	if channel == "" {
-		_, _ = s.ChannelMessageSend(BotCommandsChannel, "You have to be in a voice channel to use this command")
+		_, _ = s.ChannelMessageSend(BotCommandsChannel, "```You have to be in a voice channel to use this command```")
 	} else {
 		vcCon, _ = s.ChannelVoiceJoin(QuantexID, channel, false, false)
 	}
@@ -63,14 +63,18 @@ func musicCommandLeave() {
 }
 
 func musicCommandSkip(s *discordgo.Session) {
-	_, _ = s.ChannelMessageSend(BotCommandsChannel, "```Skipped "+q.list[0].title+"!```")
-	stopPlayback <- true
+	if !q.running {
+		_, _ = s.ChannelMessageSend(BotCommandsChannel, "```Nothing playing, can't skip```")
+	} else {
+		_, _ = s.ChannelMessageSend(BotCommandsChannel, "```Skipped "+q.list[0].title+"!```")
+		stopPlayback <- true
+	}
 }
 
 func musicCommandQueue(s *discordgo.Session) {
 	queueString := ""
 	if len(q.list) < 1 {
-		queueString = "The queue is empty"
+		queueString = "```The queue is empty```"
 		_, _ = s.ChannelMessageSend(BotCommandsChannel, queueString)
 	} else {
 		queueString = "```Music Queue:\n"
@@ -84,7 +88,9 @@ func musicCommandQueue(s *discordgo.Session) {
 
 func musicCommandPlay(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if q.running {
-		_, _ = s.ChannelMessageSend(BotCommandsChannel, "Already running!")
+		_, _ = s.ChannelMessageSend(BotCommandsChannel, "```Already running```")
+	} else if len(q.list) <= 0 {
+		_, _ = s.ChannelMessageSend(BotCommandsChannel, "```Empty queue, try adding some songs first```")
 	} else {
 		musicCommandJoin(s, m)
 		q.running = true
@@ -100,7 +106,7 @@ func musicCommandPlay(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 		q.running = false
 		musicCommandLeave()
-		_, _ = s.ChannelMessageSend(BotCommandsChannel, "Queue reached end, goodbye :wave:")
+		_, _ = s.ChannelMessageSend(BotCommandsChannel, "```Queue reached end, goodbye :wave:```")
 	}
 }
 

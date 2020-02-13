@@ -143,7 +143,7 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 			} else {
 				switch m.Content {
 				case "!help":
-					_, _ = s.ChannelMessageSend(BotCommandsChannel, "Command list: cointoss, ping, inspire, join, exit, top, topVC, calc, addSong, play, skip, insecure, me")
+					_, _ = s.ChannelMessageSend(BotCommandsChannel, "```Command list: cointoss, ping, inspire, top, topVC, topEgirls, calc, addSong, play, skip, clearQueue, insecure, me```")
 				case "!cointoss":
 					commandCointoss(s, m)
 				case "!top":
@@ -155,13 +155,15 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 				case "!me":
 					profileEmbed(s, m)
 				case "!ping":
-					_, _ = s.ChannelMessageSend(BotCommandsChannel, "pong")
+					_, _ = s.ChannelMessageSend(BotCommandsChannel, "```pong```")
 				case "!emoteT":
 					_, _ = s.ChannelMessageSend(BotCommandsChannel, "<:OBKiss:643520085197062164>")
 				case "!inspire":
 					commandInspire(s, m)
 				case "!skip":
 					musicCommandSkip(s)
+				case "!clearQueue":
+					musicCommandClearQueue(s)
 				case "!play":
 					musicCommandPlay(s, m)
 				case "!queue":
@@ -192,7 +194,7 @@ func commandGiphy(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 	if data["meta"].(map[string]interface{})["status"].(float64) == 200 {
 		if len(data["data"].([]interface{})) == 0 {
-			_, _ = s.ChannelMessageSend(m.ChannelID, "No results found :()")
+			_, _ = s.ChannelMessageSend(m.ChannelID, "```No results found :(```")
 		} else {
 			gif := data["data"].([]interface{})[0].(map[string]interface{})["embed_url"]
 			_, _ = s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("%s", gif))
@@ -223,7 +225,7 @@ func commandCointoss(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 	rand.Seed(time.Now().UnixNano())
 	side := coin[rand.Intn(len(coin))]
-	_, _ = s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("The coin landed on %s!", side))
+	_, _ = s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("```The coin landed on %s!```", side))
 }
 
 func messageReactionAdd(s *discordgo.Session, r *discordgo.MessageReactionAdd) {

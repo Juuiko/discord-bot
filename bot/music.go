@@ -50,6 +50,21 @@ func musicCommandJoin(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 }
 
+func musicCommandClearQueue(s *discordgo.Session) {
+	if len(q.list) > 1 {
+		for i := len(q.list) - 1; i > 0; i-- {
+			var err = os.Remove("./music/" + q.list[i].filename)
+			if err != nil {
+				fmt.Println(err)
+			}
+		}
+		q.list = append(q.list[:1])
+		_, _ = s.ChannelMessageSend(BotCommandsChannel, "```Queue cleared!```")
+	} else {
+		_, _ = s.ChannelMessageSend(BotCommandsChannel, "```Queue needs to be greater than 1 for this command```")
+	}
+}
+
 func musicCommandLeave() {
 	vcCon.Disconnect()
 	if q.running {
@@ -106,7 +121,7 @@ func musicCommandPlay(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 		q.running = false
 		musicCommandLeave()
-		_, _ = s.ChannelMessageSend(BotCommandsChannel, "```Queue reached end, goodbye :wave:```")
+		_, _ = s.ChannelMessageSend(BotCommandsChannel, "```Queue reached end, goodbye!```")
 	}
 }
 

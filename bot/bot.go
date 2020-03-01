@@ -86,6 +86,7 @@ func profileEmbed(s *discordgo.Session, m *discordgo.MessageCreate) {
 	mE.Color = 9693630
 	exp, vexp := findExp(m)
 	pos := findPos(m, exp)
+	vcPos := findVCPos(m, vexp)
 	member, err := s.GuildMember(QuantexID, m.Author.ID)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -94,7 +95,7 @@ func profileEmbed(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	mE.Description = "Server exp = " + strconv.Itoa(exp) + "\nServer rank = " + strconv.Itoa(pos) + "\nVC time = " + secsToHours(vexp) + "\nJoin date = " + time.Format("02/01/2006 15:04")
+	mE.Description = "Server exp = " + strconv.Itoa(exp) + "\nChat rank = " + strconv.Itoa(pos) + "\nVC time = " + secsToHours(vexp) + "\nVoice rank = " + strconv.Itoa(vcPos) + "\nJoin date = " + time.Format("02/01/2006 15:04")
 	_, err = s.ChannelMessageSendEmbed(BotCommandsChannel, mE)
 	if err != nil {
 		fmt.Println(err.Error())

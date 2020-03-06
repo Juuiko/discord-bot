@@ -27,6 +27,9 @@ func userGoodbye(s *discordgo.Session, u *discordgo.GuildMemberRemove) {
 
 func userWelcome(s *discordgo.Session, u *discordgo.GuildMemberAdd) {
 	_, _ = s.ChannelMessageSend(WelcomeChannel, fmt.Sprintf("Hey %s, welcome to **Quantex Esports Network** :tada: :hugging: <:OBKiss:643520085197062164> !", u.User.Mention()))
+	addNewUser(u.User)
+	m, _ := s.ChannelMessageSend(RoleSelectChannel, u.User.Mention())
+	_ = s.ChannelMessageDelete(m.ChannelID, m.ID)
 	return
 }
 
@@ -37,7 +40,8 @@ func logHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if strings.Contains(m.Content, "@") {
 		m.Content = strings.Replace(m.Content, "@", "[at]", 10)
 	}
-	_, _ = s.ChannelMessageSend(LogsChannel, fmt.Sprintf("\"%s\" - %s in %s", m.Content, m.Author.String(), ChannelNameByID[m.ChannelID]))
+	channel, _ := s.Channel(m.ChannelID)
+	_, _ = s.ChannelMessageSend(LogsChannel, fmt.Sprintf("\"%s\" - %s in %s", m.Content, m.Author.String(), channel.Name))
 }
 
 func voiceHandler(s *discordgo.Session, u *discordgo.VoiceStateUpdate) {
@@ -111,6 +115,16 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		_, _ = s.ChannelMessageSend(m.ChannelID, "https://www.youtube.com/watch?v=4PG_elEG7rA")
 	} else if strings.HasPrefix(m.Content, "!gif") {
 		commandGiphy(s, m)
+	} else if strings.HasPrefix(m.Content, "!betterTop") {
+		_, _ = s.ChannelMessageSend(m.ChannelID, "https://www.youtube.com/watch?v=C2iK35Mtgbk")
+	} else if strings.HasPrefix(m.Content, "!betterJungle") {
+		_, _ = s.ChannelMessageSend(m.ChannelID, "https://www.youtube.com/watch?v=D8IjiKj-U5c")
+	} else if strings.HasPrefix(m.Content, "!betterMid") {
+		_, _ = s.ChannelMessageSend(m.ChannelID, "https://www.youtube.com/watch?v=3aUa_xVjf-w")
+	} else if strings.HasPrefix(m.Content, "!betterBot") {
+		_, _ = s.ChannelMessageSend(m.ChannelID, "https://www.youtube.com/watch?v=coJJoFdIitM")
+	} else if strings.HasPrefix(m.Content, "!betterSupport") {
+		_, _ = s.ChannelMessageSend(m.ChannelID, "https://www.youtube.com/watch?v=ivWbsc4pGUc")
 	} else if m.ChannelID == BotTestChannel {
 		if strings.HasPrefix(m.Content, config.BotPrefix) {
 			switch m.Content {

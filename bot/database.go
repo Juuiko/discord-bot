@@ -91,13 +91,13 @@ func printVCLeaderboard(s *discordgo.Session, m *discordgo.MessageCreate) {
 	_, _ = s.ChannelMessageSend(m.ChannelID, message)
 }
 
-func findExp(m *discordgo.MessageCreate) (int, int) {
+func findExp(m *discordgo.MessageCreate) (int, int, int, int, int, int) {
 	u := new(user)
 	err := DB.QueryRow("SELECT * FROM users WHERE id = ?;", m.Author.ID).Scan(&u.id, &u.name, &u.discrim, &u.exp, &u.vexp, &u.wexp, &u.wvexp, &u.mexp, &u.mvexp)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	return u.exp, u.vexp
+	return u.exp, u.vexp, u.wexp, u.wvexp, u.mexp, u.mvexp
 }
 
 func findPos(m *discordgo.MessageCreate, exp int) int {
@@ -132,4 +132,87 @@ func addTimeToDB(time int64, m *discordgo.VoiceStateUpdate) {
 	weeklyTime := time + int64(u.wvexp)
 	monthlyTime := time + int64(u.mvexp)
 	sqlStmt.Exec(dailyTime, weeklyTime, monthlyTime, m.UserID)
+}
+
+func clearWeeklyExp() {
+	sqlStmt, err := DB.Prepare("UPDATE users SET wexp = 0, wvexp = 0;")
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	sqlStmt.Exec()
+}
+
+func clearMonthlyExp() {
+	sqlStmt, err := DB.Prepare("UPDATE users SET mexp = 0, mvexp = 0;")
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	sqlStmt.Exec()
+}
+
+func getWeeklyExp(s *discordgo.Session) {
+	u := new(user)
+	message := "```\nMost active users last week:\n"
+	err := DB.QueryRow("SELECT * FROM users ORDER BY wexp DESC LIMIT 1;").Scan(&u.id, &u.name, &u.discrim, &u.exp, &u.vexp, &u.wexp, &u.wvexp, &u.mexp, &u.mvexp)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	message = message + "Text chat -> " + u.name + " with " + strconv.Itoa(u.wexp/10) + " messages sent!\n"
+	err = DB.QueryRow("SELECT * FROM users ORDER BY wvexp DESC LIMIT 1;").Scan(&u.id, &u.name, &u.discrim, &u.exp, &u.vexp, &u.wexp, &u.wvexp, &u.mexp, &u.mvexp)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	message = message + "Voice chat -> " + u.name + " with " + secsToHours(u.wvexp) + " spent in chat!\n```"
+	_, _ = s.ChannelMessageSend(HallOfFameChannel, message)
+}
+
+func getMonthlyExp(s *discordgo.Session) {
+	u := new(user)
+	message := "**```\nMost active users last month:\n"
+	err := DB.QueryRow("SELECT * FROM users ORDER BY mexp DESC LIMIT 1;").Scan(&u.id, &u.name, &u.discrim, &u.exp, &u.vexp, &u.wexp, &u.wvexp, &u.mexp, &u.mvexp)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	message = message + "Text chat -> " + u.name + " with " + strconv.Itoa(u.mexp/10) + " messages sent!\n"
+	err = DB.QueryRow("SELECT * FROM users ORDER BY mvexp DESC LIMIT 1;").Scan(&u.id, &u.name, &u.discrim, &u.exp, &u.vexp, &u.wexp, &u.wvexp, &u.mexp, &u.mvexp)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	message = message + "Voice chat -> " + u.name + " with " + secsToHours(u.mvexp) + " spent in chat!\n```**"
+	_, _ = s.ChannelMessageSend(HallOfFameChannel, message)
+}
+
+func findWeeklyPos(m *discordgo.MessageCreate, wexp int) int {
+	var ranking int
+	err := DB.QueryRow("SELECT COUNT (*) FROM users WHERE wexp >= ?;", wexp).Scan(&ranking)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	return ranking
+}
+
+func findWeeklyVCPos(m *discordgo.MessageCreate, wvexp int) int {
+	var ranking int
+	err := DB.QueryRow("SELECT COUNT (*) FROM users WHERE wvexp >= ?;", wvexp).Scan(&ranking)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	return ranking
+}
+func findMonthlyPos(m *discordgo.MessageCreate, mexp int) int {
+	var ranking int
+	err := DB.QueryRow("SELECT COUNT (*) FROM users WHERE mexp >= ?;", mexp).Scan(&ranking)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	return ranking
+}
+
+func findMonthlyVCPos(m *discordgo.MessageCreate, mvexp int) int {
+	var ranking int
+	err := DB.QueryRow("SELECT COUNT (*) FROM users WHERE mvexp >= ?;", mvexp).Scan(&ranking)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	return ranking
 }

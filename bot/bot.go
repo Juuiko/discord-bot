@@ -88,9 +88,13 @@ func profileEmbed(s *discordgo.Session, m *discordgo.MessageCreate) {
 	pic.URL = m.Author.AvatarURL("128")
 	mE.Image = pic
 	mE.Color = 9693630
-	exp, vexp := findExp(m)
+	exp, vexp, wexp, wvexp, mexp, mvexp := findExp(m)
 	pos := findPos(m, exp)
 	vcPos := findVCPos(m, vexp)
+	wpos := findWeeklyPos(m, wexp)
+	wVCPos := findWeeklyVCPos(m, wvexp)
+	mpos := findMonthlyPos(m, mexp)
+	mVCPos := findMonthlyVCPos(m, mvexp)
 	member, err := s.GuildMember(QuantexID, m.Author.ID)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -99,7 +103,7 @@ func profileEmbed(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	mE.Description = "Server exp = " + strconv.Itoa(exp) + "\nChat rank = " + strconv.Itoa(pos) + "\nVC time = " + secsToHours(vexp) + "\nVoice rank = " + strconv.Itoa(vcPos) + "\nJoin date = " + time.Format("02/01/2006 15:04")
+	mE.Description = "Server exp = " + strconv.Itoa(exp) + "\nChat rank = " + strconv.Itoa(pos) + "\nVC time = " + secsToHours(vexp) + "\nVoice rank = " + strconv.Itoa(vcPos) + "\nWeekly chat rank = " + strconv.Itoa(wpos) + "\nWeekly VC rank = " + strconv.Itoa(wVCPos) + "\nMonthly chat rank = " + strconv.Itoa(mpos) + "\nMonthly VC rank = " + strconv.Itoa(mVCPos) + "\nJoin date = " + time.Format("02/01/2006 15:04")
 	_, err = s.ChannelMessageSendEmbed(BotCommandsChannel, mE)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -271,6 +275,32 @@ func messageReactionDel(s *discordgo.Session, r *discordgo.MessageReactionRemove
 	}
 }
 
+func task(t time.Time, s *discordgo.Session) {
+	 if t.Weekday() == 1 {
+		 getWeeklyExp(s)
+		 clearWeeklyExp()
+	 }
+	 if t.Day() == 1 {
+		 getMonthlyExp(s)
+		 clearMonthlyExp()
+	 }
+}
+
+func ticker(s *discordgo.Session) {
+    t := time.Now()
+    n := time.Date(t.Year(), t.Month(), t.Day(), 8, 00, 0, 0, t.Location())
+    d := n.Sub(t)
+    if d < 0 {
+        n = n.Add(24 * time.Hour)
+        d = n.Sub(t)
+    }
+    for {
+        time.Sleep(d)
+        d = 24 * time.Hour
+        task(t,s)
+    }
+}
+
 func Start() {
 	goBot, err := discordgo.New("Bot " + config.Token)
 	if err != nil {
@@ -300,4 +330,6 @@ func Start() {
 
 	ConnectionMap = make(map[string]int64)
 	fmt.Println("Bot is running!")
+
+	go ticker(goBot)
 }

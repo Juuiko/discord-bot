@@ -6,3 +6,4 @@ const BotTestChannel string = "643562280562327563";
 const WelcomeChannel string = "443051367242661908";
 const LogsChannel string = "643562017445380117";
 const RoleSelectChannel string = "672913218150072350";
+const HallOfFameChannel string = "685895928393105411";

@@ -40,8 +40,14 @@ func logHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if strings.Contains(m.Content, "@") {
 		m.Content = strings.Replace(m.Content, "@", "[at]", 10)
 	}
-	channel, _ := s.Channel(m.ChannelID)
-	_, _ = s.ChannelMessageSend(LogsChannel, fmt.Sprintf("\"%s\" - %s in %s", m.Content, m.Author.String(), channel.Name))
+	channel, err := s.Channel(m.ChannelID)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	_, err = s.ChannelMessageSend(LogsChannel, fmt.Sprintf("\"%s\" - %s in %s", m.Content, m.Author.String(), channel.Name))
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 }
 
 func voiceHandler(s *discordgo.Session, u *discordgo.VoiceStateUpdate) {
@@ -88,6 +94,24 @@ func profileEmbed(s *discordgo.Session, m *discordgo.MessageCreate) {
 	pic.URL = m.Author.AvatarURL("128")
 	mE.Image = pic
 	mE.Color = 9693630
+	exp, vexp, _, _, _, _ := findExp(m)
+	pos := findPos(m, exp)
+	vcPos := findVCPos(m, vexp)
+	mE.Description = "Server exp = " + strconv.Itoa(exp) + "\nChat rank = " + strconv.Itoa(pos) + "\nVC time = " + secsToHours(vexp) + "\nVoice rank = " + strconv.Itoa(vcPos)
+	_, err := s.ChannelMessageSendEmbed(BotCommandsChannel, mE)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+}
+
+func profileEmbedFull(s *discordgo.Session, m *discordgo.MessageCreate) {
+	mE := new(discordgo.MessageEmbed)
+	mE.Title = fmt.Sprintf("%s's profile", m.Author.Username)
+
+	pic := new(discordgo.MessageEmbedImage)
+	pic.URL = m.Author.AvatarURL("128")
+	mE.Image = pic
+	mE.Color = 9693630
 	exp, vexp, wexp, wvexp, mexp, mvexp := findExp(m)
 	pos := findPos(m, exp)
 	vcPos := findVCPos(m, vexp)
@@ -103,7 +127,7 @@ func profileEmbed(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	mE.Description = "Server exp = " + strconv.Itoa(exp) + "\nChat rank = " + strconv.Itoa(pos) + "\nVC time = " + secsToHours(vexp) + "\nVoice rank = " + strconv.Itoa(vcPos) + "\nWeekly chat rank = " + strconv.Itoa(wpos) + "\nWeekly VC rank = " + strconv.Itoa(wVCPos) + "\nMonthly chat rank = " + strconv.Itoa(mpos) + "\nMonthly VC rank = " + strconv.Itoa(mVCPos) + "\nJoin date = " + time.Format("02/01/2006 15:04")
+	mE.Description = "Server exp = " + strconv.Itoa(exp) + "\nChat rank = " + strconv.Itoa(pos) + "\nVC time = " + secsToHours(vexp) + "\nVoice rank = " + strconv.Itoa(vcPos) + "\n-*--*--*--*--*--*--*--*--*--*-\nWeekly chat rank = " + strconv.Itoa(wpos) + "\nWeekly VC rank = " + strconv.Itoa(wVCPos) + "\n-*--*--*--*--*--*--*--*--*--*-\nMonthly chat rank = " + strconv.Itoa(mpos) + "\nMonthly VC rank = " + strconv.Itoa(mVCPos) + "\nJoin date = " + time.Format("02/01/2006 15:04")
 	_, err = s.ChannelMessageSendEmbed(BotCommandsChannel, mE)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -173,6 +197,8 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 					_, _ = s.ChannelMessageSend(BotCommandsChannel, "```Top Quantex Egirls:\n1. Neasa\n2. bgscurtis\n3. Raj\n4. Adam\n5. Lizzy```")
 				case "!me":
 					profileEmbed(s, m)
+				case "!meFull":
+					profileEmbedFull(s, m)
 				case "!ping":
 					_, _ = s.ChannelMessageSend(BotCommandsChannel, "```pong```")
 				case "!emoteT":
@@ -276,29 +302,29 @@ func messageReactionDel(s *discordgo.Session, r *discordgo.MessageReactionRemove
 }
 
 func task(t time.Time, s *discordgo.Session) {
-	 if t.Weekday() == 1 {
-		 getWeeklyExp(s)
-		 clearWeeklyExp()
-	 }
-	 if t.Day() == 1 {
-		 getMonthlyExp(s)
-		 clearMonthlyExp()
-	 }
+	if t.Weekday() == 1 {
+		getWeeklyExp(s)
+		clearWeeklyExp()
+	}
+	if t.Day() == 1 {
+		getMonthlyExp(s)
+		clearMonthlyExp()
+	}
 }
 
 func ticker(s *discordgo.Session) {
-    t := time.Now()
-    n := time.Date(t.Year(), t.Month(), t.Day(), 8, 00, 0, 0, t.Location())
-    d := n.Sub(t)
-    if d < 0 {
-        n = n.Add(24 * time.Hour)
-        d = n.Sub(t)
-    }
-    for {
-        time.Sleep(d)
-        d = 24 * time.Hour
-        task(t,s)
-    }
+	t := time.Now()
+	n := time.Date(t.Year(), t.Month(), t.Day(), 22, 15, 0, 0, t.Location())
+	d := n.Sub(t)
+	if d < 0 {
+		n = n.Add(24 * time.Hour)
+		d = n.Sub(t)
+	}
+	for {
+		time.Sleep(d)
+		d = 24 * time.Hour
+		task(t, s)
+	}
 }
 
 func Start() {

@@ -13,3 +13,12 @@
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
+
+# Audio driver
+opusfile/
+
+# Compiled code
+go-bot
+
+# API Keys
+config/config.json

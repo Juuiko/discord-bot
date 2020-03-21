@@ -97,7 +97,7 @@ func profileEmbed(s *discordgo.Session, m *discordgo.MessageCreate) {
 	exp, vexp, _, _, _, _ := findExp(m)
 	pos := findPos(m, exp)
 	vcPos := findVCPos(m, vexp)
-	mE.Description = "Server exp = " + strconv.Itoa(exp) + "\nChat rank = " + strconv.Itoa(pos) + "\nVC time = " + secsToHours(vexp) + "\nVoice rank = " + strconv.Itoa(vcPos)
+	mE.Description = "Server exp = " + strconv.Itoa(exp) + "\nChat rank = " + strconv.Itoa(pos) + "\nVC time = " + secsToHours(vexp) + "\nVoice rank = " + strconv.Itoa(vcPos) + "\n--------------------\n(!meFull for all stats)"
 	_, err := s.ChannelMessageSendEmbed(BotCommandsChannel, mE)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -127,7 +127,7 @@ func profileEmbedFull(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	mE.Description = "Server exp = " + strconv.Itoa(exp) + "\nChat rank = " + strconv.Itoa(pos) + "\nVC time = " + secsToHours(vexp) + "\nVoice rank = " + strconv.Itoa(vcPos) + "\n-*--*--*--*--*--*--*--*--*--*-\nWeekly chat rank = " + strconv.Itoa(wpos) + "\nWeekly VC rank = " + strconv.Itoa(wVCPos) + "\n-*--*--*--*--*--*--*--*--*--*-\nMonthly chat rank = " + strconv.Itoa(mpos) + "\nMonthly VC rank = " + strconv.Itoa(mVCPos) + "\nJoin date = " + time.Format("02/01/2006 15:04")
+	mE.Description = "Server exp = " + strconv.Itoa(exp) + "\nChat rank = " + strconv.Itoa(pos) + "\nVC time = " + secsToHours(vexp) + "\nVoice rank = " + strconv.Itoa(vcPos) + "\n--------------------\nWeekly chat exp = " + strconv.Itoa(wexp) + "\nWeekly chat rank = " + strconv.Itoa(wpos) + "\nWeekly VC Time = " + secsToHours(wvexp) + "\nWeekly VC rank = " + strconv.Itoa(wVCPos) + "\n--------------------\nMonthly chat exp = " + strconv.Itoa(mexp) + "\nMonthly chat rank = " + strconv.Itoa(mpos) + "\nMonthly VC Time = " + secsToHours(mvexp) + "\nMonthly VC rank = " + strconv.Itoa(mVCPos) + "\nJoin date = " + time.Format("02/01/2006 15:04")
 	_, err = s.ChannelMessageSendEmbed(BotCommandsChannel, mE)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -191,8 +191,10 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 					commandCointoss(s, m)
 				case "!top":
 					printLeaderboard(s, m)
-				case "!topVC":
-					printVCLeaderboard(s, m)
+				case "!topWeek":
+					printWeeklyLeaderboard(s, m)
+				case "!topMonth":
+					printMonthlyLeaderboard(s, m)
 				case "!topEgirls":
 					_, _ = s.ChannelMessageSend(BotCommandsChannel, "```Top Quantex Egirls:\n1. Neasa\n2. bgscurtis\n3. Raj\n4. Adam\n5. Lizzy```")
 				case "!me":
@@ -302,6 +304,7 @@ func messageReactionDel(s *discordgo.Session, r *discordgo.MessageReactionRemove
 }
 
 func task(t time.Time, s *discordgo.Session) {
+	fmt.Println(t)
 	if t.Weekday() == 1 {
 		getWeeklyExp(s)
 		clearWeeklyExp()
@@ -314,7 +317,7 @@ func task(t time.Time, s *discordgo.Session) {
 
 func ticker(s *discordgo.Session) {
 	t := time.Now()
-	n := time.Date(t.Year(), t.Month(), t.Day(), 22, 15, 0, 0, t.Location())
+	n := time.Date(t.Year(), t.Month(), t.Day(), 8, 0, 0, 0, t.Location())
 	d := n.Sub(t)
 	if d < 0 {
 		n = n.Add(24 * time.Hour)

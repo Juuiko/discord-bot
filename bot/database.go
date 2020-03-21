@@ -74,18 +74,52 @@ func printLeaderboard(s *discordgo.Session, m *discordgo.MessageCreate) {
 		rows.Scan(&u.id, &u.name, &u.discrim, &u.exp, &u.vexp, &u.wexp, &u.wvexp, &u.mexp, &u.mvexp)
 		message = message + u.name + ": " + strconv.Itoa(u.exp) + "\n"
 	}
+	message = message + "\n\nTop 10 VC Users:\n"
+	rowsVC, _ := DB.Query("SELECT * FROM users ORDER BY vexp DESC LIMIT 10;")
+	defer rowsVC.Close()
+	for rowsVC.Next() {
+		rowsVC.Scan(&u.id, &u.name, &u.discrim, &u.exp, &u.vexp, &u.wexp, &u.wvexp, &u.mexp, &u.mvexp)
+		message = message + u.name + ": " + secsToHours(u.vexp) + "\n"
+	}
 	message = message + "\n```"
 	_, _ = s.ChannelMessageSend(m.ChannelID, message)
 }
 
-func printVCLeaderboard(s *discordgo.Session, m *discordgo.MessageCreate) {
+func printWeeklyLeaderboard(s *discordgo.Session, m *discordgo.MessageCreate) {
 	u := new(user)
-	message := "```\nTop 10 Voice Chat Users:\n"
-	rows, _ := DB.Query("SELECT * FROM users ORDER BY vexp DESC LIMIT 10;")
+	message := "```\nTop 10 Users This Week:\n"
+	rows, _ := DB.Query("SELECT * FROM users ORDER BY wexp DESC LIMIT 10;")
 	defer rows.Close()
 	for rows.Next() {
 		rows.Scan(&u.id, &u.name, &u.discrim, &u.exp, &u.vexp, &u.wexp, &u.wvexp, &u.mexp, &u.mvexp)
-		message = message + u.name + ": " + secsToHours(u.vexp) + "\n"
+		message = message + u.name + ": " + strconv.Itoa(u.wexp) + "\n"
+	}
+	message = message + "\n\nTop 10 VC Users This Week:\n"
+	rowsVC, _ := DB.Query("SELECT * FROM users ORDER BY wvexp DESC LIMIT 10;")
+	defer rowsVC.Close()
+	for rowsVC.Next() {
+		rowsVC.Scan(&u.id, &u.name, &u.discrim, &u.exp, &u.vexp, &u.wexp, &u.wvexp, &u.mexp, &u.mvexp)
+		message = message + u.name + ": " + secsToHours(u.wvexp) + "\n"
+	}
+	message = message + "\n```"
+	_, _ = s.ChannelMessageSend(m.ChannelID, message)
+}
+
+func printMonthlyLeaderboard(s *discordgo.Session, m *discordgo.MessageCreate) {
+	u := new(user)
+	message := "```\nTop 10 Users This Month:\n"
+	rows, _ := DB.Query("SELECT * FROM users ORDER BY mexp DESC LIMIT 10;")
+	defer rows.Close()
+	for rows.Next() {
+		rows.Scan(&u.id, &u.name, &u.discrim, &u.exp, &u.vexp, &u.wexp, &u.wvexp, &u.mexp, &u.mvexp)
+		message = message + u.name + ": " + strconv.Itoa(u.mexp) + "\n"
+	}
+	message = message + "\n\nTop 10 VC Users This Month:\n"
+	rowsVC, _ := DB.Query("SELECT * FROM users ORDER BY mvexp DESC LIMIT 10;")
+	defer rowsVC.Close()
+	for rowsVC.Next() {
+		rowsVC.Scan(&u.id, &u.name, &u.discrim, &u.exp, &u.vexp, &u.wexp, &u.wvexp, &u.mexp, &u.mvexp)
+		message = message + u.name + ": " + secsToHours(u.mvexp) + "\n"
 	}
 	message = message + "\n```"
 	_, _ = s.ChannelMessageSend(m.ChannelID, message)

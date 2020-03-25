@@ -12,6 +12,7 @@ import (
 
 	"../config"
 	"github.com/bwmarrin/discordgo"
+	"github.com/jasonlvhit/gocron"
 )
 
 var BotID string
@@ -303,30 +304,16 @@ func messageReactionDel(s *discordgo.Session, r *discordgo.MessageReactionRemove
 	}
 }
 
-func task(t time.Time, s *discordgo.Session) {
+func task(s *discordgo.Session) {
+	t := time.Now()
 	fmt.Println(t)
-	if t.Weekday() == 1 {
+	if t.Weekday() == 3 {
 		getWeeklyExp(s)
 		clearWeeklyExp()
 	}
 	if t.Day() == 1 {
 		getMonthlyExp(s)
 		clearMonthlyExp()
-	}
-}
-
-func ticker(s *discordgo.Session) {
-	t := time.Now()
-	n := time.Date(t.Year(), t.Month(), t.Day(), 8, 0, 0, 0, t.Location())
-	d := n.Sub(t)
-	if d < 0 {
-		n = n.Add(24 * time.Hour)
-		d = n.Sub(t)
-	}
-	for {
-		time.Sleep(d)
-		d = 24 * time.Hour
-		task(t, s)
 	}
 }
 
@@ -358,7 +345,6 @@ func Start() {
 	}
 
 	ConnectionMap = make(map[string]int64)
+	gocron.Every(1).Day().At("02:40").Do(task,goBot)
 	fmt.Println("Bot is running!")
-
-	go ticker(goBot)
 }

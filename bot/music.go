@@ -6,12 +6,13 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"net/http"
 	"os/exec"
 	"strconv"
-	"strings"
 	"sync"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/rs/zerolog/log"
 	"github.com/google/uuid"
 	"github.com/rylio/ytdl"
 	"layeh.com/gopus"
@@ -79,7 +80,7 @@ func musicCommandLeave() {
 
 func musicCommandSkip(s *discordgo.Session) {
 	if !q.running {
-		_, _ = s.ChannelMessageSend(BotCommandsChannel, "```Nothing playing, can't skip```")
+		_, _ = s.ChannelMessageSend(BotCommandsChannel, "```Skipped "+q.list[0].title+"!```")
 	} else {
 		_, _ = s.ChannelMessageSend(BotCommandsChannel, "```Skipped "+q.list[0].title+"!```")
 		stopPlayback <- true
@@ -126,8 +127,12 @@ func musicCommandPlay(s *discordgo.Session, m *discordgo.MessageCreate) {
 }
 
 func addMusic(s *discordgo.Session, m *discordgo.MessageCreate) {
-	songURL := strings.Trim(m.Content, "!addSong ")
-	vid, err := ytdl.GetVideoInfo(songURL)
+	songURL := m.Content[len(m.Content)-11:]
+	c := ytdl.Client{
+		HTTPClient: http.DefaultClient,
+		Logger:     log.Logger,
+	}
+	vid, err := c.GetVideoInfoFromID(songURL)
 	if err != nil {
 		_, _ = s.ChannelMessageSend(BotCommandsChannel, fmt.Sprintf("```Failed to get video info -> %s```", err))
 		return
@@ -141,7 +146,7 @@ func addMusic(s *discordgo.Session, m *discordgo.MessageCreate) {
 	_, _ = s.ChannelMessageSend(BotCommandsChannel, fmt.Sprintf("```Added %s to queue```", newSong.title))
 	file, _ := os.Create("./music/" + newSong.filename)
 	defer file.Close()
-	vid.Download(vid.Formats[0], file)
+	c.Download(vid, vid.Formats[0], file)
 }
 
 //*****Thanks to bwmarrin for the file to audio code!! <3********//

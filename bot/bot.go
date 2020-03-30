@@ -140,82 +140,75 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 	addExp(m)
+	if !strings.HasPrefix(m.Content, "!addSong"){
+		m.Content = strings.ToLower(m.Content)
+	}
 	if strings.HasPrefix(m.Content, "!insecure") {
 		_, _ = s.ChannelMessageSend(m.ChannelID, "https://www.youtube.com/watch?v=4PG_elEG7rA")
 	} else if strings.HasPrefix(m.Content, "!gif") {
 		commandGiphy(s, m)
-	} else if strings.HasPrefix(m.Content, "!betterTop") {
+	} else if strings.HasPrefix(m.Content, "!bettertop") {
 		_, _ = s.ChannelMessageSend(m.ChannelID, "https://www.youtube.com/watch?v=C2iK35Mtgbk")
-	} else if strings.HasPrefix(m.Content, "!betterJungle") {
+	} else if strings.HasPrefix(m.Content, "!betterjungle") {
 		_, _ = s.ChannelMessageSend(m.ChannelID, "https://www.youtube.com/watch?v=D8IjiKj-U5c")
-	} else if strings.HasPrefix(m.Content, "!betterMid") {
+	} else if strings.HasPrefix(m.Content, "!bettermid") {
 		_, _ = s.ChannelMessageSend(m.ChannelID, "https://www.youtube.com/watch?v=3aUa_xVjf-w")
-	} else if strings.HasPrefix(m.Content, "!betterBot") {
+	} else if strings.HasPrefix(m.Content, "!betterbot") {
 		_, _ = s.ChannelMessageSend(m.ChannelID, "https://www.youtube.com/watch?v=coJJoFdIitM")
-	} else if strings.HasPrefix(m.Content, "!betterSupport") {
+	} else if strings.HasPrefix(m.Content, "!bettersupport") {
 		_, _ = s.ChannelMessageSend(m.ChannelID, "https://www.youtube.com/watch?v=ivWbsc4pGUc")
 	} else if m.ChannelID == BotTestChannel {
 		if strings.HasPrefix(m.Content, config.BotPrefix) {
 			switch m.Content {
-			case "!listUsers":
+			case "!listusers":
 				memberListArray, _ := s.GuildMembers(QuantexID, "90530967382417408", 1000)
 				userList := "Total user list:\n"
 				for i := 0; i < len(memberListArray); i++ {
 					userList = userList + memberListArray[i].User.Username + "\n"
 				}
 				_, _ = s.ChannelMessageSend(BotTestChannel, userList)
-			case "!countUsers":
+			case "!countusers":
 				memberListArray, _ := s.GuildMembers(QuantexID, "0", 1000)
 				_, _ = s.ChannelMessageSend(BotTestChannel, fmt.Sprintf("Number of users: %s", strconv.Itoa(len(memberListArray))))
-			case "!updateList":
+			case "!updatelist":
 				memberListArray, _ := s.GuildMembers(QuantexID, "0", 1000)
 				fillDB(memberListArray)
 			}
 		}
 	} else if m.ChannelID == BotCommandsChannel || m.ChannelID == BotTestChannel {
 		if strings.HasPrefix(m.Content, config.BotPrefix) {
-			if strings.HasPrefix(m.Content, "!calc") {
-				result := strings.Split(m.Content, " ")
-				output, err := calculate(result)
-				if err != nil {
-					_, _ = s.ChannelMessageSend(BotCommandsChannel, fmt.Sprintf(err.Error()))
-				} else {
-					_, _ = s.ChannelMessageSend(BotCommandsChannel, fmt.Sprintf("Answer -> %d", output))
-				}
-			} else if strings.HasPrefix(m.Content, "!addSong") {
+			if strings.HasPrefix(m.Content, "!addSong") {
 				addMusic(s, m)
 			} else {
 				switch m.Content {
 				case "!help":
-					_, _ = s.ChannelMessageSend(BotCommandsChannel, "```Command list: cointoss, ping, inspire, top, topVC, topEgirls, calc, addSong, play, skip, clearQueue, insecure, me```")
+					_, _ = s.ChannelMessageSend(BotCommandsChannel, "```Command list: cointoss, inspire, top, topWeek, topMonth, topEgirls, addSong, play, skip, clearQueue, insecure, me```")
 				case "!cointoss":
 					commandCointoss(s, m)
 				case "!top":
 					printLeaderboard(s, m)
-				case "!topWeek":
+				case "!topweek":
 					printWeeklyLeaderboard(s, m)
-				case "!topMonth":
+				case "!topmonth":
 					printMonthlyLeaderboard(s, m)
-				case "!topEgirls":
+				case "!topegirls":
 					_, _ = s.ChannelMessageSend(BotCommandsChannel, "```Top Quantex Egirls:\n1. Neasa\n2. bgscurtis\n3. Raj\n4. Adam\n5. Lizzy```")
 				case "!me":
 					profileEmbed(s, m)
-				case "!meFull":
+				case "!mefull":
 					profileEmbedFull(s, m)
-				case "!ping":
-					_, _ = s.ChannelMessageSend(BotCommandsChannel, "```pong```")
-				case "!emoteT":
-					_, _ = s.ChannelMessageSend(BotCommandsChannel, "<:OBKiss:643520085197062164>")
 				case "!inspire":
 					commandInspire(s, m)
 				case "!skip":
 					musicCommandSkip(s)
-				case "!clearQueue":
+				case "!clearqueue":
 					musicCommandClearQueue(s)
 				case "!play":
 					musicCommandPlay(s, m)
 				case "!queue":
 					musicCommandQueue(s)
+				default:
+					_, _ = s.ChannelMessageSend(BotCommandsChannel, "```Invalid command, !help for the command list```")
 				}
 			}
 		}
@@ -306,8 +299,7 @@ func messageReactionDel(s *discordgo.Session, r *discordgo.MessageReactionRemove
 
 func task(s *discordgo.Session) {
 	t := time.Now()
-	fmt.Println(t)
-	if t.Weekday() == 3 {
+	if t.Weekday() == 1 {
 		getWeeklyExp(s)
 		clearWeeklyExp()
 	}
@@ -345,6 +337,7 @@ func Start() {
 	}
 
 	ConnectionMap = make(map[string]int64)
-	gocron.Every(1).Day().At("02:40").Do(task,goBot)
 	fmt.Println("Bot is running!")
+	gocron.Every(1).Day().At("15:30").Do(task,goBot)
+	<- gocron.Start()
 }

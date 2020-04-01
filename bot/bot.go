@@ -157,25 +157,7 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		_, _ = s.ChannelMessageSend(m.ChannelID, "https://www.youtube.com/watch?v=coJJoFdIitM")
 	} else if strings.HasPrefix(m.Content, "!bettersupport") {
 		_, _ = s.ChannelMessageSend(m.ChannelID, "https://www.youtube.com/watch?v=ivWbsc4pGUc")
-	} else if m.ChannelID == BotTestChannel {
-		if strings.HasPrefix(m.Content, config.BotPrefix) {
-			switch m.Content {
-			case "!listusers":
-				memberListArray, _ := s.GuildMembers(QuantexID, "90530967382417408", 1000)
-				userList := "Total user list:\n"
-				for i := 0; i < len(memberListArray); i++ {
-					userList = userList + memberListArray[i].User.Username + "\n"
-				}
-				_, _ = s.ChannelMessageSend(BotTestChannel, userList)
-			case "!countusers":
-				memberListArray, _ := s.GuildMembers(QuantexID, "0", 1000)
-				_, _ = s.ChannelMessageSend(BotTestChannel, fmt.Sprintf("Number of users: %s", strconv.Itoa(len(memberListArray))))
-			case "!updatelist":
-				memberListArray, _ := s.GuildMembers(QuantexID, "0", 1000)
-				fillDB(memberListArray)
-			}
-		}
-	} else if m.ChannelID == BotCommandsChannel || m.ChannelID == BotTestChannel {
+	} else if m.ChannelID == BotCommandsChannel {
 		if strings.HasPrefix(m.Content, config.BotPrefix) {
 			if strings.HasPrefix(m.Content, "!addSong") {
 				addMusic(s, m)
@@ -338,6 +320,6 @@ func Start() {
 
 	ConnectionMap = make(map[string]int64)
 	fmt.Println("Bot is running!")
-	gocron.Every(1).Day().At("15:30").Do(task,goBot)
+	gocron.Every(1).Day().At("00:00").Do(task,goBot)
 	<- gocron.Start()
 }

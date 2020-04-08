@@ -158,7 +158,7 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 			} else {
 				switch m.Content {
 				case "!help":
-					_, _ = s.ChannelMessageSend(BotCommandsChannel, "```Command list: cointoss, inspire, top, topWeek, topMonth, topEgirls, addSong, play, skip, clearQueue, insecure, me```")
+					_, _ = s.ChannelMessageSend(BotCommandsChannel, "```Command list: cointoss, inspire, top, topWeek, topMonth, topEgirls, addSong, play, skip, clearQueue, better*Role*, insecure, me```")
 				case "!cointoss":
 					commandCointoss(s, m)
 				case "!top":

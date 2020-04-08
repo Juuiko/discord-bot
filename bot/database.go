@@ -67,62 +67,125 @@ func addExp(m *discordgo.MessageCreate) {
 
 func printLeaderboard(s *discordgo.Session, m *discordgo.MessageCreate) {
 	u := new(user)
-	message := "```\nTop 10 Users:\n"
+
+	text := ""
 	rows, _ := DB.Query("SELECT * FROM users ORDER BY exp DESC LIMIT 10;")
 	defer rows.Close()
 	for rows.Next() {
 		rows.Scan(&u.id, &u.name, &u.discrim, &u.exp, &u.vexp, &u.wexp, &u.wvexp, &u.mexp, &u.mvexp)
-		message = message + u.name + ": " + strconv.Itoa(u.exp) + "\n"
+		text = text + u.name + ": " + strconv.Itoa(u.exp) + "\n"
 	}
-	message = message + "\n\nTop 10 VC Users:\n"
+
+	textVC := ""
 	rowsVC, _ := DB.Query("SELECT * FROM users ORDER BY vexp DESC LIMIT 10;")
 	defer rowsVC.Close()
 	for rowsVC.Next() {
 		rowsVC.Scan(&u.id, &u.name, &u.discrim, &u.exp, &u.vexp, &u.wexp, &u.wvexp, &u.mexp, &u.mvexp)
-		message = message + u.name + ": " + secsToHours(u.vexp) + "\n"
+		textVC = textVC + u.name + ": " + secsToHours(u.vexp) + "\n"
 	}
-	message = message + "\n```"
-	_, _ = s.ChannelMessageSend(m.ChannelID, message)
+
+	mE := new(discordgo.MessageEmbed)
+	mE.Color = 9693630
+	mE.Title = "Leaderboards"
+
+	f1 := new(discordgo.MessageEmbedField)
+	f1.Inline = true
+	f1.Name = "Text Chat"
+	f1.Value = text
+	mE.Fields = append(mE.Fields, f1)
+
+	f2 := new(discordgo.MessageEmbedField)
+	f2.Inline = true
+	f2.Name = "Voice Chat"
+	f2.Value = textVC
+	mE.Fields = append(mE.Fields, f2)
+
+	_, err := s.ChannelMessageSendEmbed(BotCommandsChannel, mE)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 }
 
 func printWeeklyLeaderboard(s *discordgo.Session, m *discordgo.MessageCreate) {
 	u := new(user)
-	message := "```\nTop 10 Users This Week:\n"
+
+	text := ""
 	rows, _ := DB.Query("SELECT * FROM users ORDER BY wexp DESC LIMIT 10;")
 	defer rows.Close()
 	for rows.Next() {
 		rows.Scan(&u.id, &u.name, &u.discrim, &u.exp, &u.vexp, &u.wexp, &u.wvexp, &u.mexp, &u.mvexp)
-		message = message + u.name + ": " + strconv.Itoa(u.wexp) + "\n"
+		text = text + u.name + ": " + strconv.Itoa(u.wexp) + "\n"
 	}
-	message = message + "\n\nTop 10 VC Users This Week:\n"
+
+	textVC := ""
 	rowsVC, _ := DB.Query("SELECT * FROM users ORDER BY wvexp DESC LIMIT 10;")
 	defer rowsVC.Close()
 	for rowsVC.Next() {
 		rowsVC.Scan(&u.id, &u.name, &u.discrim, &u.exp, &u.vexp, &u.wexp, &u.wvexp, &u.mexp, &u.mvexp)
-		message = message + u.name + ": " + secsToHours(u.wvexp) + "\n"
+		textVC = textVC + u.name + ": " + secsToHours(u.wvexp) + "\n"
 	}
-	message = message + "\n```"
-	_, _ = s.ChannelMessageSend(m.ChannelID, message)
+
+	mE := new(discordgo.MessageEmbed)
+	mE.Color = 9693630
+	mE.Title = "Weekly Leaderboards"
+
+	f1 := new(discordgo.MessageEmbedField)
+	f1.Inline = true
+	f1.Name = "Text Chat"
+	f1.Value = text
+	mE.Fields = append(mE.Fields, f1)
+
+	f2 := new(discordgo.MessageEmbedField)
+	f2.Inline = true
+	f2.Name = "Voice Chat"
+	f2.Value = textVC
+	mE.Fields = append(mE.Fields, f2)
+
+	_, err := s.ChannelMessageSendEmbed(BotCommandsChannel, mE)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 }
 
 func printMonthlyLeaderboard(s *discordgo.Session, m *discordgo.MessageCreate) {
 	u := new(user)
-	message := "```\nTop 10 Users This Month:\n"
+
+	text := ""
 	rows, _ := DB.Query("SELECT * FROM users ORDER BY mexp DESC LIMIT 10;")
 	defer rows.Close()
 	for rows.Next() {
 		rows.Scan(&u.id, &u.name, &u.discrim, &u.exp, &u.vexp, &u.wexp, &u.wvexp, &u.mexp, &u.mvexp)
-		message = message + u.name + ": " + strconv.Itoa(u.mexp) + "\n"
+		text = text + u.name + ": " + strconv.Itoa(u.mexp) + "\n"
 	}
-	message = message + "\n\nTop 10 VC Users This Month:\n"
+
+	textVC := ""
 	rowsVC, _ := DB.Query("SELECT * FROM users ORDER BY mvexp DESC LIMIT 10;")
 	defer rowsVC.Close()
 	for rowsVC.Next() {
 		rowsVC.Scan(&u.id, &u.name, &u.discrim, &u.exp, &u.vexp, &u.wexp, &u.wvexp, &u.mexp, &u.mvexp)
-		message = message + u.name + ": " + secsToHours(u.mvexp) + "\n"
+		textVC = textVC + u.name + ": " + secsToHours(u.mvexp) + "\n"
 	}
-	message = message + "\n```"
-	_, _ = s.ChannelMessageSend(m.ChannelID, message)
+
+	mE := new(discordgo.MessageEmbed)
+	mE.Color = 9693630
+	mE.Title = "Monthly Leaderboards"
+
+	f1 := new(discordgo.MessageEmbedField)
+	f1.Inline = true
+	f1.Name = "Text Chat"
+	f1.Value = text
+	mE.Fields = append(mE.Fields, f1)
+
+	f2 := new(discordgo.MessageEmbedField)
+	f2.Inline = true
+	f2.Name = "Voice Chat"
+	f2.Value = textVC
+	mE.Fields = append(mE.Fields, f2)
+
+	_, err := s.ChannelMessageSendEmbed(BotCommandsChannel, mE)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 }
 
 func findExp(m *discordgo.MessageCreate) (int, int, int, int, int, int) {

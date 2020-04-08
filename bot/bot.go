@@ -88,31 +88,6 @@ func secsToHours(secs int) string {
 }
 
 func profileEmbed(s *discordgo.Session, m *discordgo.MessageCreate) {
-	mE := new(discordgo.MessageEmbed)
-	mE.Title = fmt.Sprintf("%s's profile", m.Author.Username)
-
-	pic := new(discordgo.MessageEmbedImage)
-	pic.URL = m.Author.AvatarURL("128")
-	mE.Image = pic
-	mE.Color = 9693630
-	exp, vexp, _, _, _, _ := findExp(m)
-	pos := findPos(m, exp)
-	vcPos := findVCPos(m, vexp)
-	mE.Description = "Server exp = " + strconv.Itoa(exp) + "\nChat rank = " + strconv.Itoa(pos) + "\nVC time = " + secsToHours(vexp) + "\nVoice rank = " + strconv.Itoa(vcPos) + "\n--------------------\n(!meFull for all stats)"
-	_, err := s.ChannelMessageSendEmbed(BotCommandsChannel, mE)
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-}
-
-func profileEmbedFull(s *discordgo.Session, m *discordgo.MessageCreate) {
-	mE := new(discordgo.MessageEmbed)
-	mE.Title = fmt.Sprintf("%s's profile", m.Author.Username)
-
-	pic := new(discordgo.MessageEmbedImage)
-	pic.URL = m.Author.AvatarURL("128")
-	mE.Image = pic
-	mE.Color = 9693630
 	exp, vexp, wexp, wvexp, mexp, mvexp := findExp(m)
 	pos := findPos(m, exp)
 	vcPos := findVCPos(m, vexp)
@@ -120,18 +95,37 @@ func profileEmbedFull(s *discordgo.Session, m *discordgo.MessageCreate) {
 	wVCPos := findWeeklyVCPos(m, wvexp)
 	mpos := findMonthlyPos(m, mexp)
 	mVCPos := findMonthlyVCPos(m, mvexp)
-	member, err := s.GuildMember(QuantexID, m.Author.ID)
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-	time, err := member.JoinedAt.Parse()
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-	mE.Description = "Server exp = " + strconv.Itoa(exp) + "\nChat rank = " + strconv.Itoa(pos) + "\nVC time = " + secsToHours(vexp) + "\nVoice rank = " + strconv.Itoa(vcPos) + "\n--------------------\nWeekly chat exp = " + strconv.Itoa(wexp) + "\nWeekly chat rank = " + strconv.Itoa(wpos) + "\nWeekly VC Time = " + secsToHours(wvexp) + "\nWeekly VC rank = " + strconv.Itoa(wVCPos) + "\n--------------------\nMonthly chat exp = " + strconv.Itoa(mexp) + "\nMonthly chat rank = " + strconv.Itoa(mpos) + "\nMonthly VC Time = " + secsToHours(mvexp) + "\nMonthly VC rank = " + strconv.Itoa(mVCPos) + "\nJoin date = " + time.Format("02/01/2006 15:04")
-	_, err = s.ChannelMessageSendEmbed(BotCommandsChannel, mE)
-	if err != nil {
-		fmt.Println(err.Error())
+
+	mE := new(discordgo.MessageEmbed)
+	mE.Color = 9693630
+	mE.Description = fmt.Sprintf("Chat exp = %v\nChat rank = %v\nVC time = %v\nVoice rank = %v", exp, pos, secsToHours(vexp), vcPos)
+
+	author := new(discordgo.MessageEmbedAuthor)
+	author.Name = fmt.Sprintf("%s's profile", m.Author.Username)
+	author.IconURL = m.Author.AvatarURL("128")
+	mE.Author = author
+
+	footer := new(discordgo.MessageEmbedFooter)
+	member, _ := s.GuildMember(QuantexID, m.Author.ID)
+	time, _ := member.JoinedAt.Parse()
+	footer.Text = fmt.Sprintf("Joined on %v", time.Format("02/01/2006 15:04"))
+	mE.Footer = footer
+
+	f1 := new(discordgo.MessageEmbedField)
+	f1.Inline = true
+	f1.Name = "Weekly"
+	f1.Value = fmt.Sprintf("Chat exp = %v\nChat rank = %v\nVC time = %v\nVoice rank = %v", wexp, wpos, secsToHours(wvexp), wVCPos)
+	mE.Fields = append(mE.Fields, f1)
+
+	f2 := new(discordgo.MessageEmbedField)
+	f2.Inline = true
+	f2.Name = "Monthly"
+	f2.Value = fmt.Sprintf("Chat exp = %v\nChat rank = %v\nVC time = %v\nVoice rank = %v", mexp, mpos, secsToHours(mvexp), mVCPos)
+	mE.Fields = append(mE.Fields, f2)
+
+	_, err3 := s.ChannelMessageSendEmbed(BotCommandsChannel, mE)
+	if err3 != nil {
+		fmt.Println(err3.Error())
 	}
 }
 
@@ -177,8 +171,6 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 					_, _ = s.ChannelMessageSend(BotCommandsChannel, "```Top Quantex Egirls:\n1. Neasa\n2. bgscurtis\n3. Raj\n4. Adam\n5. Lizzy```")
 				case "!me":
 					profileEmbed(s, m)
-				case "!mefull":
-					profileEmbedFull(s, m)
 				case "!inspire":
 					commandInspire(s, m)
 				case "!skip":

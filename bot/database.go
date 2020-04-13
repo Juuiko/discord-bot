@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/bwmarrin/discordgo"
-	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/mattn/go-sqlite3" //SQLite 3 import
 )
 
 type user struct {
@@ -15,12 +15,13 @@ type user struct {
 	discrim string
 	vexp    int
 	exp     int
-	wvexp    int
-	wexp     int
-	mvexp    int
-	mexp     int
+	wvexp   int
+	wexp    int
+	mvexp   int
+	mexp    int
 }
 
+//DB is open SQLite database
 var DB sql.DB = openDB()
 
 func openDB() sql.DB {
@@ -41,7 +42,7 @@ func fillDB(ml []*discordgo.Member) {
 	}
 }
 
-func addNewUser(u *discordgo.User)  {
+func addNewUser(u *discordgo.User) {
 	sqlStmt, err := DB.Prepare("INSERT INTO users (id, name, discrim, exp, vexp, wexp, wvexp, mexp, mvexp) values (?, ?, ?, '0', '0', '0', '0', '0', '0');")
 	if err != nil {
 		fmt.Println(err.Error())

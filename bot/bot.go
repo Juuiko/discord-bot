@@ -14,10 +14,12 @@ import (
 	"github.com/jasonlvhit/gocron"
 )
 
+// BotID is id for bot
 var BotID string
 var goBot *discordgo.Session
 var vcCon *discordgo.VoiceConnection
 
+// ConnectionMap is all users currently in a voice chat
 var ConnectionMap map[string]int64
 
 func userGoodbye(s *discordgo.Session, u *discordgo.GuildMemberRemove) {
@@ -133,13 +135,15 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 	addExp(m)
-	if !strings.HasPrefix(m.Content, "!addSong"){
+	if !strings.HasPrefix(m.Content, "!addSong") {
 		m.Content = strings.ToLower(m.Content)
 	}
 	if strings.HasPrefix(m.Content, "!insecure") {
 		_, _ = s.ChannelMessageSend(m.ChannelID, "https://www.youtube.com/watch?v=4PG_elEG7rA")
 	} else if strings.HasPrefix(m.Content, "!gif") {
 		commandGiphy(s, m)
+	} else if strings.HasPrefix(m.Content, "!lolStats") {
+		commandLeagueStats(s, m)
 	} else if strings.HasPrefix(m.Content, "!bettertop") {
 		_, _ = s.ChannelMessageSend(m.ChannelID, "https://www.youtube.com/watch?v=C2iK35Mtgbk")
 	} else if strings.HasPrefix(m.Content, "!betterjungle") {
@@ -232,6 +236,10 @@ func commandInspire(s *discordgo.Session, m *discordgo.MessageCreate) {
 	_, _ = s.ChannelMessageSend(m.ChannelID, string(html))
 }
 
+func commandLeagueStats(s *discordgo.Session, m *discordgo.MessageCreate) {
+
+}
+
 func commandCointoss(s *discordgo.Session, m *discordgo.MessageCreate) {
 	coin := []string{
 		"heads",
@@ -282,6 +290,7 @@ func task(s *discordgo.Session) {
 	}
 }
 
+// Start is bot keep awake function
 func Start() {
 	goBot, err := discordgo.New("Bot " + config.Token)
 	if err != nil {
@@ -311,6 +320,6 @@ func Start() {
 
 	ConnectionMap = make(map[string]int64)
 	fmt.Println("Bot is running!")
-	gocron.Every(1).Day().At("00:00").Do(task,goBot)
-	<- gocron.Start()
+	gocron.Every(1).Day().At("00:00").Do(task, goBot)
+	<-gocron.Start()
 }

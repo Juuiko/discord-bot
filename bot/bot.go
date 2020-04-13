@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -18,6 +19,7 @@ import (
 var BotID string
 var goBot *discordgo.Session
 var vcCon *discordgo.VoiceConnection
+var leagueAPIBusy bool
 
 // ConnectionMap is all users currently in a voice chat
 var ConnectionMap map[string]int64
@@ -142,7 +144,8 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		_, _ = s.ChannelMessageSend(m.ChannelID, "https://www.youtube.com/watch?v=4PG_elEG7rA")
 	} else if strings.HasPrefix(m.Content, "!gif") {
 		commandGiphy(s, m)
-	} else if strings.HasPrefix(m.Content, "!lolStats") {
+	} else if strings.HasPrefix(m.Content, "!lolstats") {
+		m.Content = m.Content[10:]
 		commandLeagueStats(s, m)
 	} else if strings.HasPrefix(m.Content, "!bettertop") {
 		_, _ = s.ChannelMessageSend(m.ChannelID, "https://www.youtube.com/watch?v=C2iK35Mtgbk")
@@ -237,7 +240,45 @@ func commandInspire(s *discordgo.Session, m *discordgo.MessageCreate) {
 }
 
 func commandLeagueStats(s *discordgo.Session, m *discordgo.MessageCreate) {
-
+	if leagueAPIBusy == false {
+		leagueAPIBusy = true
+		mE := new(discordgo.MessageEmbed)
+		mE.Color = 9693630
+		mE.Title = "League API is Skooking Away..."
+		mE.Image = &discordgo.MessageEmbedImage{
+			URL: "https://i.gifer.com/Sge7.gif",
+		}
+		loading, _ := s.ChannelMessageSendEmbed(m.ChannelID, mE)
+		name := m.Content
+		err := makeGraph(name)
+		if err != nil {
+			_, _ = s.ChannelMessageSend(m.ChannelID, "```Summoner name could not be found on EUW!```")
+		} else {
+			filename := "./barchart.png"
+			f, err := os.Open(filename)
+			if err != nil {
+				fmt.Println(err.Error())
+			}
+			defer f.Close()
+			message := &discordgo.MessageSend{
+				Content: fmt.Sprintf("**%v's League Stats!**", name),
+				Files: []*discordgo.File{
+					&discordgo.File{
+						Name:   filename,
+						Reader: f,
+					},
+				},
+			}
+			s.ChannelMessageSendComplex(m.ChannelID, message)
+		}
+		mE.Title = "League API Cooling Down..."
+		loading, _ = s.ChannelMessageEditEmbed(loading.ChannelID, loading.ID, mE)
+		time.Sleep(2 * time.Minute)
+		_ = s.ChannelMessageDelete(loading.ChannelID, loading.ID)
+		leagueAPIBusy = false
+	} else {
+		_, _ = s.ChannelMessageSend(m.ChannelID, "```The League API is busy atm, try again later!```")
+	}
 }
 
 func commandCointoss(s *discordgo.Session, m *discordgo.MessageCreate) {

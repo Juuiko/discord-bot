@@ -18,7 +18,7 @@ import (
 	"gonum.org/v1/plot/vg/vgimg"
 )
 
-const key string = "api_key=config.RiotKey"
+const key string = "api_key=" + config.RiotKey
 
 var numberOfPulls int
 
@@ -43,7 +43,7 @@ type matchHistory struct {
 
 type match struct {
 	Lane       string
-	GameID     int
+	GameID     int64
 	Champion   int
 	PlatformID string
 	Timestamp  int
@@ -56,7 +56,7 @@ type match struct {
 type matchStats struct {
 	SeasonID              int
 	QueueID               int
-	GameID                int
+	GameID                int64
 	ParticipantIDentities []participantIDentities
 	GameVersion           string
 	PlatformID            string
@@ -244,6 +244,7 @@ func summonerSearch(name string) (summoner, error) {
 	url := base + name + "?" + key
 	numberOfPulls++
 	sum, err := urlToStructSummoner(url)
+	fmt.Println(url)
 	return sum, err
 }
 
@@ -257,17 +258,17 @@ func matchHistorySearch(summoner summoner, start int) matchHistory {
 	return urlToStructMatchHistory(url)
 }
 
-func matchStatsSearch(matchID int) matchStats {
-	gameID := strconv.Itoa(matchID)
+func matchStatsSearch(matchID int64) matchStats {
+	gameID := strconv.FormatInt(matchID, 10)
 	base := "https://euw1.api.riotgames.com/lol/match/v4/matches/"
 	url := base + gameID + "?" + key
 	numberOfPulls++
 	return urlToStructMatchStats(url)
 }
 
-func timelineSearch(matchID int) timeline {
+func timelineSearch(matchID int64) timeline {
 	base := "https://euw1.api.riotgames.com/lol/match/v4/timelines/by-match/"
-	url := base + strconv.Itoa(matchID) + "?" + key
+	url := base + strconv.FormatInt(matchID, 10) + "?" + key
 	numberOfPulls++
 	return urlToTimeline(url)
 }
@@ -282,11 +283,10 @@ func makeGraph(name string) error {
 	totalKillsGraph := [60]float64{}
 	totalAssistsGraph := [60]float64{}
 	mH0 := matchHistorySearch(summoner, 0)
-	fmt.Println(len(mH0.Matches))
 	summonerID := summoner.ID
 	for k := 0; k < sampleSize; k++ {
 		playerIDMatch := false
-		playerID := 0
+		var playerID int
 		matchStatistics := matchStatsSearch(mH0.Matches[k].GameID)
 		if len(matchStatistics.ParticipantIDentities) < 10 {
 			time.Sleep(time.Minute)
@@ -303,7 +303,6 @@ func makeGraph(name string) error {
 			time.Sleep(2 * time.Minute)
 			numberOfPulls = 0
 		}
-		fmt.Println(strconv.Itoa(k) + " games looked at")
 		for i := 0; i < len(timeline.Frames); i++ {
 			for j := 0; j < len(timeline.Frames[i].Events); j++ {
 				if timeline.Frames[i].Events[j].Type == "CHAMPION_KILL" && timeline.Frames[i].Events[j].VictimID == playerID {

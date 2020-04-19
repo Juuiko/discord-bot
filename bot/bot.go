@@ -253,6 +253,7 @@ func commandLeagueStats(s *discordgo.Session, m *discordgo.MessageCreate) {
 		err := makeGraph(name)
 		if err != nil {
 			_, _ = s.ChannelMessageSend(m.ChannelID, "```Summoner name could not be found on EUW!```")
+			fmt.Println(err)
 		} else {
 			filename := "./barchart.png"
 			f, err := os.Open(filename)
@@ -302,6 +303,12 @@ func messageReactionAdd(s *discordgo.Session, r *discordgo.MessageReactionAdd) {
 		if r.MessageReaction.Emoji.ID == "674659105578811402" { //Minecraft
 			s.GuildMemberRoleAdd(QuantexID, r.UserID, "669344100100603916")
 		}
+		if r.MessageReaction.Emoji.ID == "701157578046046218" { //Civ
+			s.GuildMemberRoleAdd(QuantexID, r.UserID, "701158068326498325")
+		}
+		if r.MessageReaction.Emoji.Name == "🇨" { //Customs
+			s.GuildMemberRoleAdd(QuantexID, r.UserID, "680186040052613176")
+		}
 	}
 }
 
@@ -315,6 +322,12 @@ func messageReactionDel(s *discordgo.Session, r *discordgo.MessageReactionRemove
 		}
 		if r.MessageReaction.Emoji.ID == "674659105578811402" {
 			s.GuildMemberRoleRemove(QuantexID, r.UserID, "669344100100603916")
+		}
+		if r.MessageReaction.Emoji.ID == "701157578046046218" {
+			s.GuildMemberRoleRemove(QuantexID, r.UserID, "701158068326498325")
+		}
+		if r.MessageReaction.Emoji.Name == "🇨" {
+			s.GuildMemberRoleRemove(QuantexID, r.UserID, "680186040052613176")
 		}
 	}
 }

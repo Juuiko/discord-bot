@@ -10,6 +10,7 @@ var (
 	Token     string
 	BotPrefix string
 	GiphyKey  string
+	RiotKey   string
 
 	config *configStruct
 )

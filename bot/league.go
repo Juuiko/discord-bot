@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"time"
 
+	"../config"
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/plotutil"
@@ -17,8 +18,6 @@ import (
 	"gonum.org/v1/plot/vg/draw"
 	"gonum.org/v1/plot/vg/vgimg"
 )
-
-const key string = "api_key=" + config.RiotKey
 
 var numberOfPulls int
 
@@ -241,7 +240,7 @@ func urlToTimeline(url string) timeline {
 
 func summonerSearch(name string) (summoner, error) {
 	base := "https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/"
-	url := base + name + "?" + key
+	url := base + name + "?" + config.RiotKey
 	numberOfPulls++
 	sum, err := urlToStructSummoner(url)
 	fmt.Println(url)
@@ -252,7 +251,7 @@ func matchHistorySearch(summoner summoner, start int) matchHistory {
 	base := "https://euw1.api.riotgames.com/lol/match/v4/matchlists/by-account/"
 	filters := "queue=420&beginIndex=" + strconv.Itoa(start) + "&"
 	accountID := string(summoner.AccountID)
-	url := base + accountID + "?" + filters + key
+	url := base + accountID + "?" + filters + config.RiotKey
 	fmt.Println(url)
 	numberOfPulls++
 	return urlToStructMatchHistory(url)
@@ -261,14 +260,14 @@ func matchHistorySearch(summoner summoner, start int) matchHistory {
 func matchStatsSearch(matchID int64) matchStats {
 	gameID := strconv.FormatInt(matchID, 10)
 	base := "https://euw1.api.riotgames.com/lol/match/v4/matches/"
-	url := base + gameID + "?" + key
+	url := base + gameID + "?" + config.RiotKey
 	numberOfPulls++
 	return urlToStructMatchStats(url)
 }
 
 func timelineSearch(matchID int64) timeline {
 	base := "https://euw1.api.riotgames.com/lol/match/v4/timelines/by-match/"
-	url := base + strconv.FormatInt(matchID, 10) + "?" + key
+	url := base + strconv.FormatInt(matchID, 10) + "?" + config.RiotKey
 	numberOfPulls++
 	return urlToTimeline(url)
 }

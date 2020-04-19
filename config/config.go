@@ -18,6 +18,7 @@ type configStruct struct {
 	Token     string `json:"Token"`
 	BotPrefix string `json:"BotPrefix"`
 	GiphyKey  string `json:"GiphyAPIKey"`
+	RiotKey   string `json:"RiotKey"`
 }
 
 func ReadConfig() error {
@@ -42,6 +43,7 @@ func ReadConfig() error {
 	Token = config.Token
 	BotPrefix = config.BotPrefix
 	GiphyKey = config.GiphyKey
+	RiotKey = config.RiotKey
 
 	return nil
 }

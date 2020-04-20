@@ -7,10 +7,14 @@ import (
 )
 
 var (
-	Token     string
+	//Token is the discord bot token
+	Token string
+	//BotPrefix is the prefixed used prior to every bot command in discord
 	BotPrefix string
-	GiphyKey  string
-	RiotKey   string
+	//GiphyKey is the key to the Giphy API
+	GiphyKey string
+	//RiotKey is the key to the Riot API
+	RiotKey string
 
 	config *configStruct
 )
@@ -22,6 +26,7 @@ type configStruct struct {
 	RiotKey   string `json:"RiotKey"`
 }
 
+//ReadConfig is a function to export hidden variables
 func ReadConfig() error {
 	fmt.Println("Reading from config file...")
 

@@ -309,6 +309,9 @@ func messageReactionAdd(s *discordgo.Session, r *discordgo.MessageReactionAdd) {
 		if r.MessageReaction.Emoji.Name == "🇨" { //Customs
 			s.GuildMemberRoleAdd(QuantexID, r.UserID, "680186040052613176")
 		}
+		if r.MessageReaction.Emoji.ID == "704239699086016562" { //Valorant
+			s.GuildMemberRoleAdd(QuantexID, r.UserID, "704238882710880336")
+		}
 	}
 }
 
@@ -328,6 +331,9 @@ func messageReactionDel(s *discordgo.Session, r *discordgo.MessageReactionRemove
 		}
 		if r.MessageReaction.Emoji.Name == "🇨" {
 			s.GuildMemberRoleRemove(QuantexID, r.UserID, "680186040052613176")
+		}
+		if r.MessageReaction.Emoji.ID == "704239699086016562" {
+			s.GuildMemberRoleRemove(QuantexID, r.UserID, "704238882710880336")
 		}
 	}
 }

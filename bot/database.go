@@ -340,7 +340,7 @@ func getMonthlyExp(s *discordgo.Session) {
 }
 
 func updateUserNames(s *discordgo.Session) {
-	ml, err := s.GuildMembers("529826420877426689", "0", 1000)
+	ml, err := s.GuildMembers("355066343587840010", "0", 1000)
 	if err != nil {
 		fmt.Println(err.Error())
 	}

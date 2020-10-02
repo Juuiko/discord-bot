@@ -91,17 +91,18 @@ func secsToHours(secs int) string {
 }
 
 func profileEmbed(s *discordgo.Session, m *discordgo.MessageCreate) {
-	exp, vexp, wexp, wvexp, mexp, mvexp := findExp(m)
+	exp, vexp, wexp, wvexp, mexp, mvexp, aml := findExp(m)
 	pos := findPos(m, exp)
 	vcPos := findVCPos(m, vexp)
 	wpos := findWeeklyPos(m, wexp)
 	wVCPos := findWeeklyVCPos(m, wvexp)
 	mpos := findMonthlyPos(m, mexp)
 	mVCPos := findMonthlyVCPos(m, mvexp)
+	amlPos := findAMLPos(m, aml)
 
 	mE := new(discordgo.MessageEmbed)
 	mE.Color = 9693630
-	mE.Description = fmt.Sprintf("Chat exp = %v\nChat rank = %v\nVC time = %v\nVoice rank = %v", exp, pos, secsToHours(vexp), vcPos)
+	mE.Description = fmt.Sprintf("Chat exp = %v\nChat rank = %v\nVC time = %v\nVoice rank = %v\nAvg Msg Length = %v\nAML rank = %v", exp, pos, secsToHours(vexp), vcPos, aml, amlPos)
 
 	author := new(discordgo.MessageEmbedAuthor)
 	author.Name = fmt.Sprintf("%s's profile", m.Author.Username)
@@ -314,6 +315,9 @@ func messageReactionAdd(s *discordgo.Session, r *discordgo.MessageReactionAdd) {
 		if r.MessageReaction.Emoji.ID == "704239699086016562" { //Valorant
 			s.GuildMemberRoleAdd(QuantexID, r.UserID, "704238882710880336")
 		}
+		if r.MessageReaction.Emoji.ID == "747604229014814760" { //Among Us
+			s.GuildMemberRoleAdd(QuantexID, r.UserID, "761327960853577738")
+		}
 	}
 }
 
@@ -336,6 +340,9 @@ func messageReactionDel(s *discordgo.Session, r *discordgo.MessageReactionRemove
 		}
 		if r.MessageReaction.Emoji.ID == "704239699086016562" {
 			s.GuildMemberRoleRemove(QuantexID, r.UserID, "704238882710880336")
+		}
+		if r.MessageReaction.Emoji.ID == "747604229014814760" {
+			s.GuildMemberRoleRemove(QuantexID, r.UserID, "761327960853577738")
 		}
 	}
 }

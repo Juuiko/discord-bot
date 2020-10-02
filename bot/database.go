@@ -236,13 +236,13 @@ func printTextLengthLeaderboard(s *discordgo.Session, m *discordgo.MessageCreate
 	}
 }
 
-func findExp(m *discordgo.MessageCreate) (int, int, int, int, int, int) {
+func findExp(m *discordgo.MessageCreate) (int, int, int, int, int, int, string) {
 	u := new(user)
 	err := DB.QueryRow("SELECT * FROM users WHERE id = ?;", m.Author.ID).Scan(&u.id, &u.name, &u.discrim, &u.exp, &u.vexp, &u.wexp, &u.wvexp, &u.mexp, &u.mvexp, &u.aml, &u.amlc)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	return u.exp, u.vexp, u.wexp, u.wvexp, u.mexp, u.mvexp
+	return u.exp, u.vexp, u.wexp, u.wvexp, u.mexp, u.mvexp, fmt.Sprintf("%.2f", u.aml)
 }
 
 func findPos(m *discordgo.MessageCreate, exp int) int {
@@ -261,6 +261,20 @@ func findVCPos(m *discordgo.MessageCreate, vexp int) int {
 		fmt.Println(err.Error())
 	}
 	return ranking
+}
+
+func findAMLPos(m *discordgo.MessageCreate, aml string) int {
+	var ranking int
+	if s, err := strconv.ParseFloat(aml, 32); err == nil {
+		err := DB.QueryRow("SELECT COUNT (*) FROM users WHERE aml >= ?;", s).Scan(&ranking)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+		return ranking
+	} else {
+		return 0
+	}
+
 }
 
 func addTimeToDB(time int64, m *discordgo.VoiceStateUpdate) {

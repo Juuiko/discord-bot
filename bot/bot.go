@@ -352,6 +352,7 @@ func task(s *discordgo.Session) {
 	if t.Weekday() == 1 {
 		getWeeklyExp(s)
 		clearWeeklyExp()
+		updateUserNames(s)
 	}
 	if t.Day() == 1 {
 		getMonthlyExp(s)

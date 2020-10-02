@@ -271,10 +271,8 @@ func findAMLPos(m *discordgo.MessageCreate, aml string) int {
 			fmt.Println(err.Error())
 		}
 		return ranking
-	} else {
-		return 0
 	}
-
+	return 0
 }
 
 func addTimeToDB(time int64, m *discordgo.VoiceStateUpdate) {
@@ -339,6 +337,20 @@ func getMonthlyExp(s *discordgo.Session) {
 	}
 	message = message + "Voice chat -> " + u.name + " with " + secsToHours(u.mvexp) + " spent in chat!\n```**"
 	_, _ = s.ChannelMessageSend(HallOfFameChannel, message)
+}
+
+func updateUserNames(s *discordgo.Session) {
+	ml, err := s.GuildMembers("529826420877426689", "0", 1000)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	for i := 0; i < len(ml); i++ {
+		sqlStmt, err := DB.Prepare("UPDATE users SET name = ?, discrim = ? WHERE id = ?;")
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+		sqlStmt.Exec(ml[i].User.Username, ml[i].User.Discriminator, ml[i].User.ID)
+	}
 }
 
 func findWeeklyPos(m *discordgo.MessageCreate, wexp int) int {

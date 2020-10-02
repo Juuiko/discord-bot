@@ -173,6 +173,8 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 					printWeeklyLeaderboard(s, m)
 				case "!topmonth":
 					printMonthlyLeaderboard(s, m)
+				case "!avgtext":
+					printTextLengthLeaderboard(s, m)
 				case "!topegirls":
 					_, _ = s.ChannelMessageSend(BotCommandsChannel, "```Top Quantex Egirls:\n1. Neasa\n2. bgscurtis\n3. Raj\n4. Adam\n5. Lizzy```")
 				case "!me":

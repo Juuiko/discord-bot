@@ -138,10 +138,10 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 	addExp(m)
-	if strings.ToLower(m.Content) == "who asked?" {
+	if strings.ToLower(m.Content) == "who asked?" || strings.ToLower(m.Content) == "who asked" {
 		rand.Seed(time.Now().UnixNano())
 		if rand.Intn(100) == 0 {
-			_, _ = s.ChannelMessageSend(m.ChannelID, "***I asked.***")
+			_, _ = s.ChannelMessageSend(m.ChannelID, "__***I asked.***__")
 		}
 	}
 	if !strings.HasPrefix(m.Content, "!addSong") {

@@ -25,7 +25,7 @@ var leagueAPIBusy bool
 var ConnectionMap map[string]int64
 
 func userGoodbye(s *discordgo.Session, u *discordgo.GuildMemberRemove) {
-	_, _ = s.ChannelMessageSend(WelcomeChannel, fmt.Sprintf("%s was banned by the tyranical Crassus, Fs in chat pls <:OBKick:643516408994594817> :cry:", u.User.Username))
+	_, _ = s.ChannelMessageSend(WelcomeChannel, fmt.Sprintf("RIP Bozo %s <:OBKick:643516408994594817> :cry:", u.User.Username))
 	return
 }
 
